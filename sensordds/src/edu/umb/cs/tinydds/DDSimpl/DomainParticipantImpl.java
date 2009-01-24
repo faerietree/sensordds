@@ -31,11 +31,15 @@ POSSIBILITY OF SUCH DAMAGE.
 package edu.umb.cs.tinydds.DDSimpl;
 
 import edu.umb.cs.tinydds.utils.Logger;
+import java.util.Hashtable;
+import java.util.Vector;
+import org.omg.dds.ContentFilteredTopic;
 import org.omg.dds.DomainParticipant;
 import org.omg.dds.Publisher;
 import org.omg.dds.PublisherListener;
 import org.omg.dds.Subscriber;
 import org.omg.dds.SubscriberListener;
+import org.omg.dds.Topic;
 
 /**
  *
@@ -45,10 +49,12 @@ public class DomainParticipantImpl implements DomainParticipant {
 
     protected static Publisher publisher = null;
     protected static Subscriber subscriber = null;
+    protected Hashtable topics;
     protected Logger logger;
 
     public DomainParticipantImpl() {
         logger = new Logger("DomainParticipantImpl");
+        topics = new Hashtable();
     }
 
     public Publisher create_publisher(PublisherListener a_listener) {
@@ -68,4 +74,33 @@ public class DomainParticipantImpl implements DomainParticipant {
         subscriber.set_listener(a_listener);
         return subscriber;
     }
+
+    public ContentFilteredTopic create_contentfilteredtopic(String name, Topic related_topic, String filter_expression, String[] expression_parameters) {
+        logger.logInfo("create_contentfilteredtopic");
+        if(topics.contains(name)){
+            //TODO this could be an ClassCastException if there is a Topic that exists with this name
+            return (ContentFilteredTopic)topics.get(name);
+        }
+        
+        ContentFilteredTopicImpl cft = new ContentFilteredTopicImpl(this, related_topic, name, filter_expression, expression_parameters);
+        
+        topics.put(name, cft);
+        
+        return cft;
+    }
+
+    
+    public Topic create_topic(String topic_name, String type_name) {
+        logger.logInfo("create_topic");
+        
+        if(topics.contains(topic_name)){
+            return (Topic)topics.get(topic_name);
+        }
+        
+        TopicImpl topic = new TopicImpl(this, topic_name, type_name);
+        
+        return topic;
+    }
+    
+    
 }

@@ -32,12 +32,17 @@ POSSIBILITY OF SUCH DAMAGE.
 package edu.umb.cs.tinydds;
 
 import com.sun.spot.peripheral.Spot;
+import edu.umb.cs.tinydds.DDSimpl.ContentFilteredTopicImpl;
+import edu.umb.cs.tinydds.DDSimpl.TopicDescriptionImpl;
+import edu.umb.cs.tinydds.DDSimpl.TopicImpl;
 import edu.umb.cs.tinydds.L3.L3;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import org.omg.dds.Topic;
+import org.omg.dds.TopicDescription;
 
 /**
  *
@@ -50,15 +55,19 @@ public class Message {
     public static final int SUBJECT_NONE = 0;
     public static final int SUBJECT_SUBSCRIBE = 1;
     public static final int SUBJECT_DATA = 2;
+    
+    public static final byte TOPIC = 0;
+    public static final byte CONTENT_FILTERED_TOPIC = 1;
+    
     protected long sender;
     protected long receiver;
     protected long originator;
     //TODO: change this to hash code?
-    protected String topic;
+    protected TopicDescription topic;
     protected int subject;
     protected MessagePayload payload;
 
-    Message(long sender, long receiver, long originator, String topic, int subject, MessagePayload payload) {
+    Message(long sender, long receiver, long originator, Topic topic, int subject, MessagePayload payload) {
         this.sender = sender;
         this.receiver = receiver;
         this.originator = originator;
@@ -68,11 +77,11 @@ public class Message {
     }
 
     public Message(MessagePayload payload) {
-        this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), "", Message.SUBJECT_NONE, payload);
+        this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), null, Message.SUBJECT_NONE, payload);
     }
     
     public Message() {
-        this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), "", Message.SUBJECT_NONE, null);
+        this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), null, Message.SUBJECT_NONE, null);
     }
 
     public long getSender() {
@@ -91,11 +100,11 @@ public class Message {
         this.receiver = receiver;
     }
 
-    public String getTopic() {
+    public TopicDescription getTopic() {
         return topic;
     }
 
-    public void setTopic(String topic) {
+    public void setTopic(TopicDescription topic) {
         this.topic = topic;
     }
 
@@ -115,7 +124,17 @@ public class Message {
             dout.writeLong(getSender());
             dout.writeLong(getReceiver());
             dout.writeLong(getOriginator());
-            dout.writeUTF(getTopic());
+            
+            //dout.writeUTF(getTopic());
+            if(topic instanceof TopicImpl){
+                dout.writeByte(TOPIC);
+            }
+            else if(topic instanceof ContentFilteredTopicImpl){
+                dout.writeByte(CONTENT_FILTERED_TOPIC);
+            }
+            ((TopicDescriptionImpl)topic).write(dout); 
+            
+            
             dout.writeShort((short) getSubject());
             dout.write(payload.marshall());
             dout.flush();
@@ -134,7 +153,22 @@ public class Message {
             setSender(din.readLong());
             setReceiver(din.readLong());
             setOriginator(din.readLong());
-            setTopic(din.readUTF());
+            
+            //setTopic(din.readUTF());
+            TopicDescriptionImpl topic = null;
+            byte topicType = din.readByte();
+            
+            if(topicType == TOPIC){
+                topic = new TopicImpl();
+            }
+            else if(topicType == CONTENT_FILTERED_TOPIC){
+                topic = new ContentFilteredTopicImpl();
+            }
+            
+            topic.read(din);
+            
+            setTopic(topic);
+            
             setSubject(din.readShort());
             din.read(b);
             payload.demarshall(b);

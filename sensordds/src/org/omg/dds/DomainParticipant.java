@@ -9,4 +9,8 @@ package org.omg.dds;
 public interface DomainParticipant extends org.omg.dds.Entity {
     org.omg.dds.Publisher create_publisher(org.omg.dds.PublisherListener a_listener);
     org.omg.dds.Subscriber create_subscriber(org.omg.dds.SubscriberListener a_listener);
+
+    ContentFilteredTopic create_contentfilteredtopic(String name, Topic related_topic, String filter_expression, String[] expression_parameters);
+    Topic create_topic(String topic_name, String type_name);
+    
 } // interface DomainParticipant

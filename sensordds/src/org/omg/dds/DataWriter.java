@@ -13,7 +13,7 @@ import edu.umb.cs.tinydds.MessagePayload;
 public interface DataWriter extends  org.omg.dds.Entity 
 {
   org.omg.dds.DataWriterListener get_listener ();
-  String get_topic ();
+  Topic get_topic ();
   org.omg.dds.Publisher get_publisher ();
   void write(MessagePayload msg);
   int set_listener (org.omg.dds.DataWriterListener a_listener);

@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package edu.umb.cs.tinydds.DDSimpl;
 
 import edu.umb.cs.tinydds.DDS;
+import edu.umb.cs.tinydds.Message;
 import edu.umb.cs.tinydds.OERP.OERP;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
@@ -42,6 +43,7 @@ import org.omg.dds.DataReaderListener;
 import org.omg.dds.DomainParticipant;
 import org.omg.dds.Subscriber;
 import org.omg.dds.SubscriberListener;
+import org.omg.dds.TopicDescription;
 
 /**
  *
@@ -61,7 +63,7 @@ public class SubscriberImpl extends Observable implements Subscriber, Observer {
         dataReaderTable = new Hashtable();
     }
 
-    public DataReader create_datareader(String topic, DataReaderListener a_listener) {
+    public DataReader create_datareader(TopicDescription topic, DataReaderListener a_listener) {
         logger.logInfo("create_datareader");
         if(dataReaderTable.get(topic) == null) {
             DataReader dataReader = new DataReaderImpl(this, topic);
@@ -94,7 +96,9 @@ public class SubscriberImpl extends Observable implements Subscriber, Observer {
 
     public void update(Observable obj, Object arg) {
         logger.logInfo("update");
-        if(obj.equals(oerp)) {
+        
+        //only care about getting subscription data
+        if(obj.equals(oerp) && (arg instanceof Message) && (((Message)arg).getSubject() == Message.SUBJECT_DATA) ) {
             logger.logInfo("push up");
             notifyObservers(arg);
         }

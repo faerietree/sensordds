@@ -51,7 +51,7 @@ import java.util.Vector;
 public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 
     Logger logger;
-    Hashtable topicWeight;
+    //Hashtable topicWeight;
     Hashtable parent;
     LED leds;
     Vector subscribedTopic;
@@ -65,7 +65,7 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         leds.setColor(3, LEDColor.RED);
         logger = new Logger("SpanningTree");
         logger.logInfo("initiate");
-        topicWeight = new Hashtable();
+        //topicWeight = new Hashtable();
         subscribedTopic = new Vector();
         parent = new Hashtable();
     }
@@ -75,28 +75,32 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         logger.logInfo("update:receive message subject=" + msg.getSubject() + " topic=" + msg.getTopic() + " orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender()));
         if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
             logger.logInfo("update:subscribe message");
-            MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
-            byte weight = payload.get()[0];
+            //MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
+            //byte weight = payload.get()[0];
             String topic = msg.getTopic();
-            logger.logInfo("incomming weight=" + weight + " current weight=" + topicWeight.get(topic));
-            if (topicWeight.get(topic) == null || (((Integer) topicWeight.get(topic)).intValue()) > weight) {
-                logger.logInfo("update:weight need to be updated");
-                // set new parent
-                parent.put(topic, new Long(msg.getSender()));
-                // update the weight
-                topicWeight.put(topic, new Integer(weight));
-                updateLed(weight);
-                // set the new weight
-                weight++;
-                byte[] weights = new byte[1];
-                weights[0] = (byte) (weight);
-                // resent message
-                payload.set(weights);
-                msg.setPayload(payload);
-                send(msg);
-            } else {
-                logger.logInfo("update:drop");
-            }
+            
+            //logger.logInfo("incomming weight=" + weight + " current weight=" + topicWeight.get(topic));
+            
+            parent.put(topic, new Long(msg.getSender()));
+            
+//            if (topicWeight.get(topic) == null || (((Integer) topicWeight.get(topic)).intValue()) > weight) {
+//                logger.logInfo("update:weight need to be updated");
+//                // set new parent
+////              parent.put(topic, new Long(msg.getSender()));
+//                // update the weight
+//                topicWeight.put(topic, new Integer(weight));
+//                updateLed(weight);
+//                // set the new weight
+//                weight++;
+//                byte[] weights = new byte[1];
+//                weights[0] = (byte) (weight);
+//                // resent message
+//                payload.set(weights);
+//                msg.setPayload(payload);
+//                send(msg);
+//            } else {
+//                logger.logInfo("update:drop");
+//            }
         }
         if (msg.getSubject() == Message.SUBJECT_DATA) {
             if (subscribedTopic.contains(msg.getTopic())) {
@@ -122,7 +126,8 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         } else if (msg.getSubject() == Message.SUBJECT_DATA) {
             // msg.setReceiver(AddressFiltering.longToAddress((Long)parent.get(msg.getTopic()))); 
             if (parent.get(msg.getTopic()) != null) {
-                msg.setReceiver(((Long) parent.get(msg.getTopic())).longValue());
+                Long receiverAddress = (Long)parent.get(msg.getTopic());
+                msg.setReceiver(receiverAddress.longValue());
                 return tinygiop.send(msg);
             }
             logger.logInfo("send:no subscriber, drop");
@@ -137,8 +142,9 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         //TODO this limit the network radius to only 255 hops, but that should be large enough
         logger.logInfo("subscribe");
         subscribedTopic.addElement(topic);
+        
         byte[] weight = new byte[1];
-        topicWeight.put(topic, new Integer(0));
+        //topicWeight.put(topic, new Integer(0));
         weight[0] = 1;
         MessagePayload payload = new MessagePayloadBytes(weight);
         Message msg = new Message(payload);

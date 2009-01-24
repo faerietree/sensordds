@@ -30,6 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.umb.cs.tinydds;
 
+import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderListenerImpl;
@@ -116,7 +117,7 @@ public class Application implements Observer {
             Message msg = (Message) arg;
             MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
             int light = Utils.readBigEndInt(payload.get(), 0);
-            logger.logInfo("We got data from " + AddressFiltering.longToAddress(msg.getOriginator()) + " value = " + light);
+            logger.logInfo("We got data from " + IEEEAddress.toDottedHex(msg.getOriginator()) + " value = " + light);
             leds.setRGB(6, 0, light, 0);
             leds.setOn(6);
         }

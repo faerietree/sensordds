@@ -39,6 +39,7 @@ import edu.umb.cs.tinydds.utils.Observer;
 import org.omg.dds.DataReader;
 import org.omg.dds.DataReaderListener;
 import org.omg.dds.Subscriber;
+import org.omg.dds.TopicDescription;
 
 /**
  *
@@ -48,11 +49,13 @@ public class DataReaderImpl extends Observable implements DataReader, Observer {
     Logger logger;
     Subscriber subscriber;
     DataReaderListener dataReaderListener;
-    String topic;
-    public DataReaderImpl(Subscriber subscriber, String topic) {
+    TopicDescription topic;
+    
+    public DataReaderImpl(Subscriber subscriber, TopicDescription topic) {
         logger = new Logger("DataReaderImpl");
         this.subscriber = subscriber;
         this.topic = topic;
+        
         logger.logInfo("initiate:topic=" + topic);
     }
     public int set_listener(DataReaderListener a_listener) {

@@ -4,7 +4,7 @@ import edu.umb.cs.tinydds.OERP.OERP;
 
 public interface Subscriber extends org.omg.dds.Entity {
 
-    org.omg.dds.DataReader create_datareader(String a_topic, org.omg.dds.DataReaderListener a_listener);
+    org.omg.dds.DataReader create_datareader(TopicDescription a_topic, org.omg.dds.DataReaderListener a_listener);
     //int delete_datareader(org.omg.dds.DataReader a_datareader);
     //int delete_contained_entities();
     //org.omg.dds.DataReader lookup_datareader(String topic_name);

@@ -37,11 +37,13 @@ import edu.umb.cs.tinydds.MessagePayload;
 import edu.umb.cs.tinydds.OERP.OERP;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
+import edu.umb.cs.tinydds.utils.Observer;
 import java.util.Hashtable;
 import org.omg.dds.DataWriter;
 import org.omg.dds.DataWriterListener;
 import org.omg.dds.Publisher;
 import org.omg.dds.PublisherListener;
+import org.omg.dds.Topic;
 
 /**
  *
@@ -61,7 +63,7 @@ public class PublisherImpl extends Observable implements Publisher {
         dataWriterTable = new Hashtable();
     }
 
-    public DataWriter create_datawriter(String topic, DataWriterListener a_listener) {
+    public DataWriter create_datawriter(Topic topic, DataWriterListener a_listener) {
         logger.logInfo("create_datawriter");
         if (dataWriterTable.get(topic) == null) {
             DataWriter dataWriter = new DataWriterImpl(this, topic);
@@ -98,4 +100,15 @@ public class PublisherImpl extends Observable implements Publisher {
     public void setOERP(OERP oerp) {
         PublisherImpl.oerp = oerp;
     }
+
+//    public void update(Observable obj, Object arg) {
+//       
+//        logger.logInfo("update");
+//        if(obj.equals(oerp) && (arg instanceof Message) && (((Message)arg).getSubject() == Message.SUBJECT_SUBSCRIBE)) {
+//            Message message = (Message)arg;
+//            
+//        }
+//    }
+    
+    
 }

@@ -35,6 +35,7 @@ import edu.umb.cs.tinydds.Message;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOP;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
+import org.omg.dds.TopicDescription;
 
 /**
  *
@@ -51,5 +52,5 @@ public abstract class OERP extends Observable implements Observer{
     
     public abstract int send(Message msg);
     
-    public abstract int subscribe(String topic);
+    public abstract int subscribe(TopicDescription topic);
 }

@@ -39,6 +39,7 @@ import edu.umb.cs.tinydds.utils.Observable;
 import org.omg.dds.DataWriter;
 import org.omg.dds.DataWriterListener;
 import org.omg.dds.Publisher;
+import org.omg.dds.Topic;
 
 /**
  *
@@ -48,8 +49,9 @@ public class DataWriterImpl extends Observable implements DataWriter{
     Logger logger;
     Publisher publisher;
     DataWriterListener dataWriterListener;
-    String topic;
-    public DataWriterImpl(Publisher publisher, String topic) {
+    Topic topic;
+    
+    public DataWriterImpl(Publisher publisher, Topic topic) {
         logger = new Logger("DataWriterImpl");
         this.publisher = publisher;
         this.topic = topic;
@@ -60,7 +62,7 @@ public class DataWriterImpl extends Observable implements DataWriter{
         return dataWriterListener;
     }
 
-    public String get_topic() {
+    public Topic get_topic() {
         logger.logInfo("get_topic");
         return topic;
     }

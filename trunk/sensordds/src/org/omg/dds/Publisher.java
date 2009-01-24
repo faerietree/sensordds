@@ -10,7 +10,7 @@ import edu.umb.cs.tinydds.OERP.OERP;
  * Monday, August 18, 2008 12:58:40 AM EDT
  */// ----------------------------------------------------------------------
 public interface Publisher extends org.omg.dds.Entity {
-    org.omg.dds.DataWriter create_datawriter(String a_topic, org.omg.dds.DataWriterListener a_listener);
+    org.omg.dds.DataWriter create_datawriter(Topic a_topic, org.omg.dds.DataWriterListener a_listener);
     int set_listener(org.omg.dds.PublisherListener a_listener);
     org.omg.dds.PublisherListener get_listener();
     //FIXME: should publish here?

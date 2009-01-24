@@ -35,7 +35,6 @@ import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderListenerImpl;
 import edu.umb.cs.tinydds.DDSimpl.DomainParticipantImpl;
-import edu.umb.cs.tinydds.L3.AddressFiltering;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.io.LightSensor;
 import edu.umb.cs.tinydds.utils.Logger;
@@ -50,6 +49,7 @@ import org.omg.dds.DataWriter;
 import org.omg.dds.DomainParticipant;
 import org.omg.dds.Publisher;
 import org.omg.dds.Subscriber;
+import org.omg.dds.Topic;
 
 /**
  *
@@ -82,9 +82,13 @@ public class Application implements Observer {
 
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
+        
+        Topic topic = domainParticipant.create_topic("TempSensor", "TempSensor1");
+  
         publisher = domainParticipant.create_publisher(null);
-        dataWriter = publisher.create_datawriter("TempSensor", null);
-
+        //dataWriter = publisher.create_datawriter("TempSensor", null);
+        dataWriter = publisher.create_datawriter(topic, null);
+        
         logger.logInfo("initiate");
     }
 
@@ -107,12 +111,18 @@ public class Application implements Observer {
                 // Create subscriber
                 // FIXME: Some flag should be put here, we need to publish only once
                 logger.logInfo("subscribe");
+                
                 subscriber = domainParticipant.create_subscriber(null);
+                Topic topic = domainParticipant.create_topic("TempSensor", "TempSensor1");
+                
                 dataReaderListener = new DataReaderListenerImpl();
-                dataReader = subscriber.create_datareader("TempSensor", dataReaderListener);
+                
+                dataReader = subscriber.create_datareader(topic, dataReaderListener);
+                
                 ((DataReaderImpl) dataReader).addObserver(this);
             }
-        } else if (obj.equals(dataReader)) {
+        } 
+        else if (obj.equals(dataReader)) {
             // data from DataReader
             Message msg = (Message) arg;
             MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();

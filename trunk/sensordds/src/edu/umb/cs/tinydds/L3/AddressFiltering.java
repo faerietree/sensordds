@@ -95,10 +95,11 @@ public class AddressFiltering {
 
     public static String longToAddress(long addr) {
         //FIXME: this too
-        if (addr < mapList.length && !mapList[(int) addr].equals("")) {
-            return mapList[(int) addr];
-        }
-        String hexAddr = IEEEAddress.toDottedHex(addr + 4097);
-        return "c0a8.0067.0000." + Utils.split(hexAddr, '.')[3];
+//        if (addr < mapList.length && !mapList[(int) addr].equals("")) {
+//            return mapList[(int) addr];
+//        }
+        //String hexAddr = IEEEAddress.toDottedHex(addr + 4097);
+        //return "c0a8.0067.0000." + Utils.split(hexAddr, '.')[3];
+        return IEEEAddress.toDottedHex(addr);
     }
 }

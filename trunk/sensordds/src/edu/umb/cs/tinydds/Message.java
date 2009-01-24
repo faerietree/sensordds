@@ -112,9 +112,9 @@ public class Message {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         DataOutputStream dout = new DataOutputStream(bout);
         try {
-            dout.writeInt((int) getSender());
-            dout.writeInt((int) getReceiver());
-            dout.writeInt((int) getOriginator());
+            dout.writeLong(getSender());
+            dout.writeLong(getReceiver());
+            dout.writeLong(getOriginator());
             dout.writeUTF(getTopic());
             dout.writeShort((short) getSubject());
             dout.write(payload.marshall());
@@ -131,9 +131,9 @@ public class Message {
         DataInputStream din = new DataInputStream(bin);
         byte[] b = new byte[data.length];
         try {
-            setSender(din.readInt());
-            setReceiver(din.readInt());
-            setOriginator(din.readInt());
+            setSender(din.readLong());
+            setReceiver(din.readLong());
+            setOriginator(din.readLong());
             setTopic(din.readUTF());
             setSubject(din.readShort());
             din.read(b);

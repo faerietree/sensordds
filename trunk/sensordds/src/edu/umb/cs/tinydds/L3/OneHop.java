@@ -53,11 +53,15 @@ public class OneHop extends L3 implements Runnable {
     boolean flag;
 
     public OneHop() {
-        myAddress = AddressFiltering.addressToLong(IEEEAddress.toDottedHex(Spot.getInstance().getRadioPolicyManager().getIEEEAddress()));
+        //this just doesn't seem to work..
+        //myAddress = AddressFiltering.addressToLong(IEEEAddress.toDottedHex(Spot.getInstance().getRadioPolicyManager().getIEEEAddress()));
+        myAddress = Spot.getInstance().getRadioPolicyManager().getIEEEAddress();
+        //myAddress = new IEEEAddress(foo).asLong();
+        
         logger = new Logger("OneHop");
         logger.logInfo("initiated:");
-        logger.logInfo("initiated:my address is " + L3.getAddress());
-        addressFiltering = new AddressFiltering(L3.getAddress());
+        logger.logInfo("initiated:my address is " + IEEEAddress.toDottedHex(L3.getAddress()));
+        //addressFiltering = new AddressFiltering(L3.getAddress());
         logger.logInfo("initiated:start receiver thread");
         flag = false;
         new Thread(this).start();
@@ -78,7 +82,7 @@ public class OneHop extends L3 implements Runnable {
             url = "radiogram://broadcast:123";
         }
         logger.logInfo("send:to:" + url);
-        logger.logInfo("sned:subject:" + msg.getSubject());
+        logger.logInfo("send:subject:" + msg.getSubject());
         logger.logInfo("send:topic:" + msg.getTopic());
         try {
             rgc_tx = (RadiogramConnection) Connector.open(url);
@@ -147,18 +151,18 @@ public class OneHop extends L3 implements Runnable {
                 logger.logInfo("run:receive a connection from " + dg.getAddress());
                 //FIXME: This is a dirty hack, but I can't see how to fix better than this =_==
                 //Gotta find a way to fix the address of base station...
-                if (mesg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
-                    MessagePayloadBytes payload = (MessagePayloadBytes) mesg.getPayload();
-                    byte weight = payload.get()[0];
-                    logger.logInfo("run:check if it's subscription " + weight);
-                    if (weight == 1) { // This guy must be the base station
-                        AddressFiltering.setBaseStation(dg.getAddress());
-                    }
-                }
-                if (!addressFiltering.isMyNeighbor(dg.getAddress())) {
-                    logger.logInfo("run:drop by address filtering");
-                    continue;
-                }
+//                if (mesg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
+//                    MessagePayloadBytes payload = (MessagePayloadBytes) mesg.getPayload();
+//                    byte weight = payload.get()[0];
+//                    logger.logInfo("run:check if it's subscription " + weight);
+//                    if (weight == 1) { // This guy must be the base station
+//                        AddressFiltering.setBaseStation(dg.getAddress());
+//                    }
+//                }
+//                if (!addressFiltering.isMyNeighbor(dg.getAddress())) {
+//                    logger.logInfo("run:drop by address filtering");
+//                    continue;
+//                }
                 //dg.readFully(b);
                 logger.logInfo("run:notify observer");
                 this.notifyObservers((Object) mesg);

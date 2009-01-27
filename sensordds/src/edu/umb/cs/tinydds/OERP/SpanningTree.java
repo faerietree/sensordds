@@ -53,7 +53,7 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 
     Logger logger;
     //Hashtable topicWeight;
-    Hashtable parent;
+    Hashtable subscriptionAddresses;
     LED leds;
     Vector subscribedTopic;
 
@@ -68,13 +68,15 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         logger.logInfo("initiate");
         //topicWeight = new Hashtable();
         subscribedTopic = new Vector();
-        parent = new Hashtable();
+        subscriptionAddresses = new Hashtable();
     }
 
     public void update(Observable obj, Object arg) {
         Message msg = (Message) arg;
         logger.logInfo("update:receive message subject=" + msg.getSubject() + " topic=" + msg.getTopic() + " orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender()));
+        
         if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
+            
             logger.logInfo("update:subscribe message");
             //MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
             //byte weight = payload.get()[0];
@@ -82,7 +84,7 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
             
             //logger.logInfo("incomming weight=" + weight + " current weight=" + topicWeight.get(topic));
             
-            parent.put(topic.get_name(), new Long(msg.getSender()));
+            subscriptionAddresses.put(topic, new Long(msg.getSender()));
             
 //            if (topicWeight.get(topic) == null || (((Integer) topicWeight.get(topic)).intValue()) > weight) {
 //                logger.logInfo("update:weight need to be updated");
@@ -102,15 +104,16 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 //            } else {
 //                logger.logInfo("update:drop");
 //            }
+            //notifyObservers(arg);
         }
         if (msg.getSubject() == Message.SUBJECT_DATA) {
-            if (subscribedTopic.contains(msg.getTopic().get_name())) {
+            if (subscribedTopic.contains(msg.getTopic())) {
                 logger.logInfo("update:we're intrested in this topic, push up");
                 notifyObservers(arg);
             }
-            if (parent.get(msg.getTopic().get_name()) != null) {
+            if (subscriptionAddresses.get(msg.getTopic()) != null) {
                 logger.logInfo("update:forward data message");
-                msg.setReceiver(((Long) parent.get(msg.getTopic())).longValue());
+                msg.setReceiver(((Long) subscriptionAddresses.get(msg.getTopic())).longValue());
                 tinygiop.send(msg);
             }
         } 
@@ -128,8 +131,8 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         } 
         else if (msg.getSubject() == Message.SUBJECT_DATA) {
             // msg.setReceiver(AddressFiltering.longToAddress((Long)parent.get(msg.getTopic()))); 
-            if (parent.get(msg.getTopic().get_name()) != null) {
-                Long receiverAddress = (Long)parent.get(msg.getTopic().get_name());
+            if (subscriptionAddresses.get(msg.getTopic()) != null) {
+                Long receiverAddress = (Long)subscriptionAddresses.get(msg.getTopic());
                 msg.setReceiver(receiverAddress.longValue());
                 return tinygiop.send(msg);
             }

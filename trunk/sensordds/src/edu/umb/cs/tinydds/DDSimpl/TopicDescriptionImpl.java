@@ -38,6 +38,26 @@ public abstract class TopicDescriptionImpl implements TopicDescription {
     public String toString() {
         return get_name();
     }
+
+    public boolean equals(Object arg0) {
+        
+        if(arg0.getClass() != this.getClass())
+            return false;
+        
+        TopicDescriptionImpl thing = (TopicDescriptionImpl)arg0;
+        
+        if(thing.get_name().equals(get_name()) && thing.get_type_name().equals(get_type_name())){
+            return true;
+        }
+        else {
+            return false;
+        }
+        
+    }
+
+    public int hashCode() {
+        return name.hashCode();
+    }
     
     public abstract void read(DataInputStream is) throws IOException;
     

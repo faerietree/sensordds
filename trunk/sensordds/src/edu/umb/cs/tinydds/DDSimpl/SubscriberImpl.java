@@ -97,7 +97,7 @@ public class SubscriberImpl extends Observable implements Subscriber, Observer {
     public void update(Observable obj, Object arg) {
         logger.logInfo("update");
         
-        //only care about getting subscription data
+        //only care about getting subscription data ... maybe
         if(obj.equals(oerp) && (arg instanceof Message) && (((Message)arg).getSubject() == Message.SUBJECT_DATA) ) {
             logger.logInfo("push up");
             notifyObservers(arg);

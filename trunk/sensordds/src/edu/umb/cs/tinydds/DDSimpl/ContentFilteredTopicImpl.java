@@ -69,11 +69,11 @@ public class ContentFilteredTopicImpl extends TopicDescriptionImpl implements Co
         this.type_name = is.readUTF();
         this.filter_expression = is.readUTF();
         
-        int n = is.readInt();
+        int numParams = is.readInt();
         
-        String[] expression_parameters = new String[n];
+        String[] expression_parameters = new String[numParams];
 
-        for(int i=0;i<n;i++){
+        for(int i=0;i<numParams;i++){
             expression_parameters[i] = is.readUTF();
         }
  
@@ -85,10 +85,10 @@ public class ContentFilteredTopicImpl extends TopicDescriptionImpl implements Co
         os.writeUTF(type_name);
         os.writeUTF(filter_expression);
         
-        int n = expression_parameters.length;
-        os.writeInt(n);
+        int numParams = expression_parameters.length;
+        os.writeInt(numParams);
         
-        for(int i=0; i<n; i++){
+        for(int i=0; i<numParams; i++){
             String expressionParam = expression_parameters[i];
             os.writeUTF(expressionParam);
         }

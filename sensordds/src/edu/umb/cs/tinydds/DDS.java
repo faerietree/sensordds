@@ -79,10 +79,13 @@ public class DDS extends MIDlet {
         tinygiop.setL4(l4);
         oerp = new SpanningTree();
         oerp.setTinyGIOP(tinygiop);
+        
+        
         DomainParticipant domainParticipant = new DomainParticipantImpl();
         domainParticipant.create_publisher(null).setOERP(oerp);
         domainParticipant.create_subscriber(null).setOERP(oerp);
         oerp.addObserver((SubscriberImpl) domainParticipant.create_subscriber(null));
+        
         
         //Start application
         new Application();

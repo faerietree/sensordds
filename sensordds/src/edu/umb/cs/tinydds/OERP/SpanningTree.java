@@ -37,11 +37,11 @@ import edu.umb.cs.tinydds.L3.L3;
 import edu.umb.cs.tinydds.Message;
 import edu.umb.cs.tinydds.MessagePayload;
 import edu.umb.cs.tinydds.MessagePayloadBytes;
+import edu.umb.cs.tinydds.TopicManager;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOPObserver;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
-import java.util.Hashtable;
 import java.util.Vector;
 import org.omg.dds.TopicDescription;
 
@@ -53,10 +53,11 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 
     Logger logger;
     //Hashtable topicWeight;
-    Hashtable subscriptionAddresses;
+    //Hashtable subscriptionAddresses;  //replaced with TopicManager
     LED leds;
     Vector subscribedTopic;
-
+    TopicManager topicManager;
+    
     public SpanningTree() {
         super();
         leds = new LED();
@@ -66,54 +67,42 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         leds.setColor(3, LEDColor.RED);
         logger = new Logger("SpanningTree");
         logger.logInfo("initiate");
+        
         //topicWeight = new Hashtable();
         subscribedTopic = new Vector();
-        subscriptionAddresses = new Hashtable();
+        
+        //subscriptionAddresses = new Hashtable();
+        topicManager = TopicManager.getInstance();
     }
 
     public void update(Observable obj, Object arg) {
         Message msg = (Message) arg;
         logger.logInfo("update:receive message subject=" + msg.getSubject() + " topic=" + msg.getTopic() + " orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender()));
         
-        if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
+        if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {  //publisher gets here
             
             logger.logInfo("update:subscribe message");
-            //MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
-            //byte weight = payload.get()[0];
+          
             TopicDescription topic = msg.getTopic();
             
-            //logger.logInfo("incomming weight=" + weight + " current weight=" + topicWeight.get(topic));
+            topicManager.addAddressForTopic(topic, msg.getSender());
             
-            subscriptionAddresses.put(topic, new Long(msg.getSender()));
-            
-//            if (topicWeight.get(topic) == null || (((Integer) topicWeight.get(topic)).intValue()) > weight) {
-//                logger.logInfo("update:weight need to be updated");
-//                // set new parent
-////              parent.put(topic, new Long(msg.getSender()));
-//                // update the weight
-//                topicWeight.put(topic, new Integer(weight));
-//                updateLed(weight);
-//                // set the new weight
-//                weight++;
-//                byte[] weights = new byte[1];
-//                weights[0] = (byte) (weight);
-//                // resent message
-//                payload.set(weights);
-//                msg.setPayload(payload);
-//                send(msg);
-//            } else {
-//                logger.logInfo("update:drop");
-//            }
+            //subscriptionAddresses.put(topic, new Long(msg.getSender()));
             //notifyObservers(arg);
         }
-        if (msg.getSubject() == Message.SUBJECT_DATA) {
-            if (subscribedTopic.contains(msg.getTopic())) {
+        if (msg.getSubject() == Message.SUBJECT_DATA) {  
+            
+            if (subscribedTopic.contains(msg.getTopic())) {   //subscriber gets here
                 logger.logInfo("update:we're intrested in this topic, push up");
                 notifyObservers(arg);
             }
-            if (subscriptionAddresses.get(msg.getTopic()) != null) {
+            
+            Vector subscriptionAddresses = topicManager.getAddressesForTopic(msg.getTopic());
+            if (!subscriptionAddresses.isEmpty()) { 
                 logger.logInfo("update:forward data message");
-                msg.setReceiver(((Long) subscriptionAddresses.get(msg.getTopic())).longValue());
+                
+                Long address = (Long)subscriptionAddresses.firstElement();
+                msg.setReceiver(address.longValue());
                 tinygiop.send(msg);
             }
         } 
@@ -126,16 +115,20 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         logger.logInfo("send:msg");
         if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
             msg.setReceiver(L3.BROADCAST_ADDRESS);
-
             return tinygiop.send(msg);
         } 
-        else if (msg.getSubject() == Message.SUBJECT_DATA) {
-            // msg.setReceiver(AddressFiltering.longToAddress((Long)parent.get(msg.getTopic()))); 
-            if (subscriptionAddresses.get(msg.getTopic()) != null) {
-                Long receiverAddress = (Long)subscriptionAddresses.get(msg.getTopic());
+        else if (msg.getSubject() == Message.SUBJECT_DATA) {   //publishing this 
+            
+            Vector addresses = topicManager.getAddressesForTopic(msg.getTopic());
+            if (addresses != null) {
+                //Long receiverAddress = (Long)subscriptionAddresses.get(msg.getTopic());
+                
+                //we will fix this to support multiple receipents later
+                Long receiverAddress = (Long)addresses.firstElement();   
                 msg.setReceiver(receiverAddress.longValue());
                 return tinygiop.send(msg);
             }
+            
             logger.logInfo("send:no subscriber, drop");
         }
         return DDS.FAIL;
@@ -147,7 +140,7 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
     public int subscribe(TopicDescription topic) {
         //TODO this limit the network radius to only 255 hops, but that should be large enough
         logger.logInfo("subscribe");
-        subscribedTopic.addElement(topic.get_name());
+        subscribedTopic.addElement(topic);
         
         byte[] weight = new byte[1];
         //topicWeight.put(topic, new Integer(0));

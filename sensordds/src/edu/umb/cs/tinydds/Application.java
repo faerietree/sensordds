@@ -30,6 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.umb.cs.tinydds;
 
+import com.sun.spot.sensorboard.peripheral.TemperatureInput;
 import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
@@ -78,16 +79,16 @@ public class Application implements Observer {
         switchs = new Switch();
         ((Observable) switchs).addObserver(this);
         leds = new LED();
+        
         lightSensor = new LightSensor();
 
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
         
-        Topic topic = domainParticipant.create_topic("TempSensor", "TempSensor1");
-  
+        Topic topic = domainParticipant.create_topic("LightSensor", "LightSensor1"); 
+        
         publisher = domainParticipant.create_publisher(null);
-        //dataWriter = publisher.create_datawriter("TempSensor", null);
-        dataWriter = publisher.create_datawriter(topic, null);
+        dataWriter = publisher.create_datawriter(topic, null);  
         
         logger.logInfo("initiate");
     }
@@ -113,10 +114,14 @@ public class Application implements Observer {
                 logger.logInfo("subscribe");
                 
                 subscriber = domainParticipant.create_subscriber(null);
-                Topic topic = domainParticipant.create_topic("TempSensor", "TempSensor1");
+                Topic topic = domainParticipant.create_topic("LightSensor", "LightSensor1");
                 
-                dataReaderListener = new DataReaderListenerImpl();
-                
+                String filter_expression = "light > %n";
+                String[] expression_parameters = {"100"};
+        
+                domainParticipant.create_contentfilteredtopic("LightSensorZ", topic, filter_expression, expression_parameters);
+        
+                dataReaderListener = new DataReaderListenerImpl();           
                 dataReader = subscriber.create_datareader(topic, dataReaderListener);
                 
                 ((DataReaderImpl) dataReader).addObserver(this);

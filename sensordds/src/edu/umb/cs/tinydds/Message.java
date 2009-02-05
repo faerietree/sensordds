@@ -62,26 +62,35 @@ public class Message {
     protected long sender;
     protected long receiver;
     protected long originator;
-    //TODO: change this to hash code?
+    protected byte topicType;
     protected TopicDescription topic;
     protected int subject;
     protected MessagePayload payload;
 
-    Message(long sender, long receiver, long originator, Topic topic, int subject, MessagePayload payload) {
+    Message(long sender, long receiver, long originator, TopicDescription topic, int subject, MessagePayload payload) {
         this.sender = sender;
         this.receiver = receiver;
         this.originator = originator;
-        this.topic = topic;
+        
+        setTopic(topic);
+        
         this.subject = subject;
         this.payload = payload;
     }
 
     public Message(MessagePayload payload) {
-        this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), null, Message.SUBJECT_NONE, payload);
+        //this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), topic, Message.SUBJECT_NONE, payload);
+        this();
+        this.payload = payload;
     }
     
     public Message() {
-        this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), null, Message.SUBJECT_NONE, null);
+        //this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), null, Message.SUBJECT_NONE, null);
+        this.sender = Spot.getInstance().getRadioPolicyManager().getIEEEAddress();
+        this.receiver = L3.NO_ADDRESS;
+        this.originator = L3.getAddress();
+        
+        this.subject = SUBJECT_NONE;
     }
 
     public long getSender() {
@@ -106,6 +115,13 @@ public class Message {
 
     public void setTopic(TopicDescription topic) {
         this.topic = topic;
+    
+        //lolh4x
+        if (topic instanceof TopicImpl) {
+            topicType = TOPIC;
+        } else if (topic instanceof ContentFilteredTopicImpl) {
+            topicType = CONTENT_FILTERED_TOPIC;
+        }
     }
 
     public MessagePayload getPayload() {
@@ -126,14 +142,15 @@ public class Message {
             dout.writeLong(getOriginator());
             
             //dout.writeUTF(getTopic());
-            if(topic instanceof TopicImpl){
-                dout.writeByte(TOPIC);
-            }
-            else if(topic instanceof ContentFilteredTopicImpl){
-                dout.writeByte(CONTENT_FILTERED_TOPIC);
-            }
-            ((TopicDescriptionImpl)topic).write(dout); 
+//            if(topic instanceof TopicImpl){
+//                dout.writeByte(TOPIC);
+//            }
+//            else if(topic instanceof ContentFilteredTopicImpl){
+//                dout.writeByte(CONTENT_FILTERED_TOPIC);
+//            }
+            dout.writeByte(topicType);   //which type of topic this is
             
+            ((TopicDescriptionImpl)topic).write(dout); //write topic
             
             dout.writeShort((short) getSubject());
             dout.write(payload.marshall());
@@ -156,7 +173,7 @@ public class Message {
             
             //setTopic(din.readUTF());
             TopicDescriptionImpl topic = null;
-            byte topicType = din.readByte();
+            topicType = din.readByte();     //set topic type
             
             if(topicType == TOPIC){
                 topic = new TopicImpl();
@@ -193,4 +210,9 @@ public class Message {
     public void setOriginator(long originator) {
         this.originator = originator;
     }
+    
+    public byte getTopicType(){
+        return topicType;
+    }
 }
+    

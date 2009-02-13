@@ -1,0 +1,34 @@
+FilterExpression        ::= Condition
+
+Condition               ::= Predicate 
+                        |   Condition ÔANDÕ Condition 
+                        |   Condition ÔORÕ Condition 
+                        |   ÔNOTÕ Condition 
+                        |   Ô(Õ Condition Ô)Õ 
+                        . 
+
+Predicate               ::= ComparisonPredicate 
+                        |   BetweenPredicate 
+                        .
+ 
+ComparisonPredicate     ::= FIELDNAME RelOp Parameter 
+                        |   Parameter RelOp FIELDNAME 
+                        |   FIELDNAME RelOp FIELDNAME 
+                        . 
+
+BetweenPredicate        ::= FIELDNAME ÔBETWEENÕ Range 
+                        |   FIELDNAME ÔNOT BETWEENÕ Range 
+                        . 
+
+RelOp                   ::= Ô=Õ | Ô>Õ | Ô>=Õ | Ô<Õ | Ô<=Õ | Ô<>Õ | like 
+                        .
+ 
+Range                   ::= Parameter ÔANDÕ Parameter 
+                        .
+ 
+Parameter               ::= INTEGERVALUE 
+                        |   CHARVALUE 
+                        |   FLOATVALUE 
+                        |   STRING  
+                        |   ENUMERATEDVALUE 
+                        |   PARAMETER 

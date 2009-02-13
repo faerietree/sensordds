@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package edu.umb.cs.tinydds.OERP;
 
 import com.sun.spot.sensorboard.peripheral.LEDColor;
+import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.L3.AddressFiltering;
 import edu.umb.cs.tinydds.L3.L3;
@@ -42,6 +43,7 @@ import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOPObserver;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
+import java.util.Enumeration;
 import java.util.Vector;
 import org.omg.dds.TopicDescription;
 
@@ -98,7 +100,7 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
             }
             
             Vector subscriptionAddresses = topicManager.getAddressesForTopic(msg.getTopic());
-            if (!subscriptionAddresses.isEmpty()) { 
+            if (subscriptionAddresses != null) { 
                 logger.logInfo("update:forward data message");
                 
                 Long address = (Long)subscriptionAddresses.firstElement();
@@ -121,18 +123,18 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
             
             Vector addresses = topicManager.getAddressesForTopic(msg.getTopic());
             if (addresses != null) {
-                //Long receiverAddress = (Long)subscriptionAddresses.get(msg.getTopic());
-                
+                //Long receiverAddress = (Long)subscriptionAddresses.get(msg.getTopic());    
                 //we will fix this to support multiple receipents later
-                Long receiverAddress = (Long)addresses.firstElement();   
+                Long receiverAddress = (Long) addresses.firstElement();
                 msg.setReceiver(receiverAddress.longValue());
                 return tinygiop.send(msg);
             }
-            
+
             logger.logInfo("send:no subscriber, drop");
         }
         return DDS.FAIL;
     }
+    
 
     public void run() {
     }

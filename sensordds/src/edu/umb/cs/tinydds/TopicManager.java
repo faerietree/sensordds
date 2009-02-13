@@ -6,8 +6,12 @@
 package edu.umb.cs.tinydds;
 
 import edu.umb.cs.tinydds.utils.Logger;
+
+import edu.umb.cs.tinydds.utils.TopicConstraintMatcher;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import org.omg.dds.ContentFilteredTopic;
 import org.omg.dds.TopicDescription;
 
 /**
@@ -20,16 +24,18 @@ public class TopicManager {
     
     protected Hashtable topics;
     protected Logger logger;
+    protected TopicConstraintMatcher matcher;
     
     protected TopicManager(){
         topics = new Hashtable();
+        matcher = new TopicConstraintMatcher();
         logger = new Logger("TopicManager");
         logger.logInfo("initiate");
     }
     
-    public static TopicManager getInstance(){
-        
-        if(topicManager == null){
+    public static synchronized TopicManager getInstance(){
+    
+        if (topicManager == null) {
             topicManager = new TopicManager();
         }
         
@@ -48,12 +54,30 @@ public class TopicManager {
         
         Vector subscriberAddresses = (Vector)topics.get(topicDescription);
         
-        if(subscriberAddresses == null){  //we don't have anything for this topic yet
-            subscriberAddresses = new Vector();
-            topics.put(topicDescription, subscriberAddresses);   
+        return subscriberAddresses;
+    }
+    
+    /**
+     * 
+     * @param topic
+     * @param value
+     * @return
+     */
+    public Vector findFilteredTopics(TopicDescription topic, int value){
+        logger.logInfo("findFilteredTopics");
+        
+        Vector matchedFilteredTopics = new Vector();
+        
+        //insert magic here.
+        Enumeration filteredTopics = getContentFilteredTopics(topic);
+        while(filteredTopics.hasMoreElements()){
+            ContentFilteredTopic filteredTopic = (ContentFilteredTopic)filteredTopics.nextElement();
+            if(matcher.match(filteredTopic, value)){
+                matchedFilteredTopics.addElement(filteredTopic);
+            }
         }
         
-        return subscriberAddresses;
+        return matchedFilteredTopics;
     }
     
     /**
@@ -66,6 +90,10 @@ public class TopicManager {
         
         //get the list of subscriber addresses associated with this topic
         Vector subscriberAddresses = getAddressesForTopic(topicDescription);
+        if(subscriberAddresses == null){
+            subscriberAddresses = new Vector();
+            topics.put(topicDescription, subscriberAddresses);
+        }
         
         //this needs to be a Long to add to a Collection.  Fix this awful variable name.
         Long subscriberAddressLong = new Long(subscriberAddress); 
@@ -80,4 +108,37 @@ public class TopicManager {
         }
     }
     
+    /**
+     * Returns an Enumeration of TopicDescription objects
+     * 
+     * @return 
+     */
+    public Enumeration getAllTopics(){
+        logger.logInfo("getAllTopics");
+        return topics.keys();
+    }
+    
+    /**
+     * 
+     * @param topic
+     * @return
+     */
+    public Enumeration getContentFilteredTopics(TopicDescription topic){
+        logger.logInfo("getcontentFilteredTopics");
+        
+        Vector foo = new Vector();
+        
+        Enumeration allTopics = getAllTopics();
+        while(allTopics.hasMoreElements()){
+            TopicDescription topicFiltered = (TopicDescription)allTopics.nextElement();
+            
+            if(topicFiltered instanceof ContentFilteredTopic && 
+               topic.get_type_name().equals(topicFiltered.get_type_name())){
+                
+                foo.addElement(topicFiltered);
+            }
+        }
+        
+        return foo.elements();
+    }
 }

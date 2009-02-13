@@ -18,10 +18,10 @@ import org.omg.dds.Topic;
  */
 public class ContentFilteredTopicImpl extends TopicDescriptionImpl implements ContentFilteredTopic {
     
-    private String filter_expression;
-    private String[] expression_parameters;
-    private DomainParticipant dp;
-    private Topic related_topic;
+    protected String filter_expression;
+    protected String[] expression_parameters;
+    protected DomainParticipant dp;
+    protected Topic related_topic;
     
     public ContentFilteredTopicImpl(DomainParticipant dp, Topic related_topic, String name, String filter_expression, String[] expression_parameters) {
         this(name, related_topic, filter_expression, expression_parameters);     

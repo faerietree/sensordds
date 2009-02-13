@@ -30,20 +30,25 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.umb.cs.tinydds.DDSimpl;
 
+import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.L3.L3;
 import edu.umb.cs.tinydds.Message;
 import edu.umb.cs.tinydds.MessagePayload;
+import edu.umb.cs.tinydds.MessagePayloadBytes;
 import edu.umb.cs.tinydds.OERP.OERP;
+import edu.umb.cs.tinydds.TopicManager;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
-import edu.umb.cs.tinydds.utils.Observer;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 import org.omg.dds.DataWriter;
 import org.omg.dds.DataWriterListener;
 import org.omg.dds.Publisher;
 import org.omg.dds.PublisherListener;
 import org.omg.dds.Topic;
+import org.omg.dds.TopicDescription;
 
 /**
  *
@@ -54,6 +59,7 @@ public class PublisherImpl extends Observable implements Publisher {
     Logger logger;
     Hashtable dataWriterTable;
     PublisherListener publisherListener = null;
+    TopicManager topicManager;
     static OERP oerp = null;
 
     public PublisherImpl() {
@@ -61,6 +67,7 @@ public class PublisherImpl extends Observable implements Publisher {
         logger = new Logger("PublisherImpl");
         logger.logInfo("initiate");
         dataWriterTable = new Hashtable();
+        topicManager = TopicManager.getInstance();
     }
 
     public DataWriter create_datawriter(Topic topic, DataWriterListener a_listener) {
@@ -93,8 +100,21 @@ public class PublisherImpl extends Observable implements Publisher {
         msg.setOriginator(L3.getAddress());
         if (oerp == null) {
             logger.logError("publish:OERP is not connected");
+            return;
         }
-        oerp.send(msg);
+        
+        oerp.send(msg);   //publish data for original topic
+    
+        /* see if there are any filtered topics that fit the original topic */
+        MessagePayloadBytes bytes = (MessagePayloadBytes)payload;
+        Vector subTopics = topicManager.findFilteredTopics(msg.getTopic(), Utils.readBigEndInt(bytes.get(), 0));
+        Enumeration list = subTopics.elements();
+        while (list.hasMoreElements()) {
+            TopicDescription filteredTopic = (TopicDescription) list.nextElement();
+            msg.setTopic(filteredTopic);
+            oerp.send(msg);
+        }
+  
     }
 
     public void setOERP(OERP oerp) {

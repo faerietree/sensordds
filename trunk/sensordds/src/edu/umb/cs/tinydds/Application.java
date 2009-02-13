@@ -44,6 +44,7 @@ import edu.umb.cs.tinydds.utils.Observer;
 import edu.umb.cs.tinydds.io.Switch;
 import edu.umb.cs.tinydds.io.SwitchStatus;
 import java.io.IOException;
+import org.omg.dds.ContentFilteredTopic;
 import org.omg.dds.DataReader;
 import org.omg.dds.DataReaderListener;
 import org.omg.dds.DataWriter;
@@ -85,7 +86,7 @@ public class Application implements Observer {
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
         
-        Topic topic = domainParticipant.create_topic("LightSensor", "LightSensor1"); 
+        Topic topic = domainParticipant.create_topic("LightSensor", "light"); 
         
         publisher = domainParticipant.create_publisher(null);
         dataWriter = publisher.create_datawriter(topic, null);  
@@ -114,15 +115,15 @@ public class Application implements Observer {
                 logger.logInfo("subscribe");
                 
                 subscriber = domainParticipant.create_subscriber(null);
-                Topic topic = domainParticipant.create_topic("LightSensor", "LightSensor1");
+                Topic topic = domainParticipant.create_topic("LightSensor", "light");
                 
                 String filter_expression = "light > %n";
                 String[] expression_parameters = {"100"};
         
-                domainParticipant.create_contentfilteredtopic("LightSensorZ", topic, filter_expression, expression_parameters);
+                ContentFilteredTopic filteredTopic = domainParticipant.create_contentfilteredtopic("LightSensorZ", topic, filter_expression, expression_parameters);
         
                 dataReaderListener = new DataReaderListenerImpl();           
-                dataReader = subscriber.create_datareader(topic, dataReaderListener);
+                dataReader = subscriber.create_datareader(filteredTopic, dataReaderListener);
                 
                 ((DataReaderImpl) dataReader).addObserver(this);
             }

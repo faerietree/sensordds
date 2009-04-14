@@ -51,7 +51,7 @@ import org.omg.dds.TopicDescription;
  */
 
 // This is JavaBean style class, it should be self-contain.
-public class Message {
+public class PubSubMessage extends AbstractMessage {
 
     public static final short SUBJECT_NONE = 0;
     public static final short SUBJECT_SUBSCRIBE = 1;
@@ -60,18 +60,14 @@ public class Message {
     public static final byte TOPIC = 0;
     public static final byte CONTENT_FILTERED_TOPIC = 1;
     
-    protected long sender;
-    protected long receiver;
-    protected long originator;
     protected byte topicType;
     protected TopicDescription topic;
     protected short subject;
     protected MessagePayload payload;
 
-    Message(long sender, long receiver, long originator, TopicDescription topic, short subject, MessagePayload payload) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.originator = originator;
+    PubSubMessage(long sender, long receiver, long originator, TopicDescription topic, short subject, MessagePayload payload) {
+
+        super((byte)0, sender, receiver, originator);
         
         setTopic(topic);
         
@@ -79,36 +75,15 @@ public class Message {
         this.payload = payload;
     }
 
-    public Message(MessagePayload payload) {
+    public PubSubMessage(MessagePayload payload) {
         //this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), topic, Message.SUBJECT_NONE, payload);
         this();
         this.payload = payload;
     }
     
-    public Message() {
-        //this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), null, Message.SUBJECT_NONE, null);
-        this.sender = Spot.getInstance().getRadioPolicyManager().getIEEEAddress();
-        
-        this.receiver = L3.NO_ADDRESS;
-        this.originator = L3.getAddress();
-        
+    public PubSubMessage() {
+        super();
         this.subject = SUBJECT_NONE;
-    }
-
-    public long getSender() {
-        return sender;
-    }
-
-    public void setSender(long sender) {
-        this.sender = sender;
-    }
-
-    public long getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(long receiver) {
-        this.receiver = receiver;
     }
 
     public TopicDescription getTopic() {
@@ -134,11 +109,28 @@ public class Message {
         this.payload = payload;
     }
 
+    public int getSubject() {
+        return subject;
+    }
+
+    public void setSubject(short subject) {
+        this.subject = subject;
+    }
+    
+    public byte getTopicType(){
+        return topicType;
+    }
+    
     public byte[] marshall() {
-        if(payload == null) return null;
+        if(payload == null) 
+            return null;
+        
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         DataOutputStream dout = new DataOutputStream(bout);
+        
         try {
+            dout.writeByte(messageType);    //identify this as a PubSubMessage
+            
             dout.writeLong(getSender());
             dout.writeLong(getReceiver());
             dout.writeLong(getOriginator());
@@ -162,11 +154,12 @@ public class Message {
         DataInputStream din = new DataInputStream(bin);
         byte[] b = new byte[data.length];
         try {
+            din.readByte();   //eat the messageType flag
+            
             setSender(din.readLong());
             setReceiver(din.readLong());
             setOriginator(din.readLong());
             
-            //setTopic(din.readUTF());
             TopicDescriptionImpl topic = null;
             topicType = din.readByte();     //set topic type
             
@@ -188,50 +181,6 @@ public class Message {
         }
 
     }
-
-    public int getSubject() {
-        return subject;
-    }
-
-    public void setSubject(short subject) {
-        this.subject = subject;
-    }
-
-    public long getOriginator() {
-        return originator;
-    }
-
-    public void setOriginator(long originator) {
-        this.originator = originator;
-    }
-    
-    public byte getTopicType(){
-        return topicType;
-    }
-    
-    
-//    public static void main(String args[]){
-//        
-//        String filter_expression = "Phenom:light > %n";
-//        String[] expression_parameters = {"100"};
-//      
-//        TopicImpl topic = new TopicImpl(null, "LightSensorZ", "light");
-//        
-//        ContentFilteredTopicImpl t = new ContentFilteredTopicImpl("TopicSensorZ", topic, filter_expression, expression_parameters);
-//        
-//        byte data[] = new byte[4];
-//        Utils.writeBigEndInt(data, 0, 100);
-//        
-//        MessagePayloadBytes payload = new MessagePayloadBytes(data);
-//
-//        Message message = new Message(123, 456, 789, t, SUBJECT_DATA, payload);
-//        
-//        byte[] bitez = message.marshall();
-//        
-//        Message message1 = new Message();
-//        message1.demarshall(bitez);
-//        
-//        System.out.println(message1.getSubject());
-//    }
+  
 }
     

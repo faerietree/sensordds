@@ -32,8 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.umb.cs.tinydds.tinygiop;
 
+import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.L4.L4;
-import edu.umb.cs.tinydds.Message;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
 
@@ -48,6 +48,6 @@ public abstract class TinyGIOP extends Observable implements Observer{
         this.l4 = l4;
         l4.addObserver(this);
     }
-    public abstract int send(Message msg);
+    public abstract int send(AbstractMessage msg);
 
 }

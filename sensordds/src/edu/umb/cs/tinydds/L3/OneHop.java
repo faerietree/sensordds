@@ -33,11 +33,10 @@ package edu.umb.cs.tinydds.L3;
 import com.sun.spot.io.j2me.radiogram.Radiogram;
 import com.sun.spot.io.j2me.radiogram.RadiogramConnection;
 import com.sun.spot.peripheral.Spot;
-import com.sun.spot.peripheral.radio.mhrp.aodv.routing.RoutingTable;
 import com.sun.spot.util.IEEEAddress;
+import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.DDS;
-import edu.umb.cs.tinydds.Message;
-import edu.umb.cs.tinydds.MessagePayloadBytes;
+import edu.umb.cs.tinydds.MessageFactory;
 import edu.umb.cs.tinydds.utils.Logger;
 import java.io.IOException;
 import javax.microedition.io.Connector;
@@ -68,7 +67,8 @@ public class OneHop extends L3 implements Runnable {
         new Thread(this).start();
     }
 
-    public int send(Message msg) {
+    public int send(AbstractMessage msg) {
+        
         RadiogramConnection rgc_tx = null;
         Radiogram dg = null;
         String url = null;
@@ -83,8 +83,8 @@ public class OneHop extends L3 implements Runnable {
             url = "radiogram://broadcast:123";
         }
         logger.logInfo("send:to:" + url);
-        logger.logInfo("send:subject:" + msg.getSubject());
-        logger.logInfo("send:topic:" + msg.getTopic());
+        //logger.logInfo("send:subject:" + msg.getSubject());
+        //logger.logInfo("send:topic:" + msg.getTopic());
         try {
             rgc_tx = (RadiogramConnection) Connector.open(url);
             dg = (Radiogram) rgc_tx.newDatagram(rgc_tx.getMaximumLength());
@@ -144,7 +144,10 @@ public class OneHop extends L3 implements Runnable {
         while (true) {
             try {
                 byte[] b = new byte[rgc_rx.getMaximumLength()];
-                Message mesg = new Message(new MessagePayloadBytes(new byte[b.length]));
+                
+                //PubSubMessage mesg = new PubSubMessage(new MessagePayloadBytes(new byte[b.length]));
+                AbstractMessage mesg = MessageFactory.create(b);
+                
                 dg.reset();
                 rgc_rx.receive(dg);
                 b = dg.getData();

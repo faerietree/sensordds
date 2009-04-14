@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.umb.cs.tinydds.OERP;
 
-import edu.umb.cs.tinydds.Message;
+import edu.umb.cs.tinydds.PubSubMessage;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOP;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
@@ -50,7 +50,7 @@ public abstract class OERP extends Observable implements Observer{
         tinygiop.addObserver(this);
     }
     
-    public abstract int send(Message msg);
+    public abstract int send(PubSubMessage msg);
     
     public abstract int subscribe(TopicDescription topic);
 }

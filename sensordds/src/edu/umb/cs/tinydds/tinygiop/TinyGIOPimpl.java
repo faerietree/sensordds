@@ -31,8 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.umb.cs.tinydds.tinygiop;
 
+import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.L4.L4Observer;
-import edu.umb.cs.tinydds.Message;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 
@@ -50,7 +50,7 @@ public class TinyGIOPimpl extends TinyGIOP implements L4Observer {
         logger.logInfo("initiate");
     }
 
-    public int send(Message msg) {
+    public int send(AbstractMessage msg) {
         logger.logInfo("send");
         return l4.send(msg);
     }

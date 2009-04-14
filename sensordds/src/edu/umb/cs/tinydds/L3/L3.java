@@ -42,7 +42,7 @@ public abstract class L3 extends Observable {
     public static final long NO_ADDRESS = Long.MIN_VALUE;
     public static final long BROADCAST_ADDRESS = Long.MAX_VALUE;
     public static long myAddress = 0;
-    public abstract int send(Message msg);
+    public abstract int send(AbstractMessage msg);
     public static long getAddress() {
         return myAddress;
     }

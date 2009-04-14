@@ -117,9 +117,9 @@ public class Application implements Observer {
                 subscriber = domainParticipant.create_subscriber(null);
                 Topic topic = domainParticipant.create_topic("LightSensor", "light");
                 
-                String filter_expression = "light > %n";
+                String filter_expression = "Phenom:light > %n";
                 String[] expression_parameters = {"100"};
-        
+                
                 ContentFilteredTopic filteredTopic = domainParticipant.create_contentfilteredtopic("LightSensorZ", topic, filter_expression, expression_parameters);
         
                 dataReaderListener = new DataReaderListenerImpl();           

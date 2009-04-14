@@ -16,4 +16,6 @@ public interface ContentFilteredTopic extends TopicDescription {
     String[] get_expression_parameters();
     
     void set_expression_parameters(String[] expression_parameters);
+
+    public String get_filter_expression();
 }

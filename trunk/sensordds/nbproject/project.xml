@@ -9,7 +9,7 @@
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-            <name>TinyDDSOriginal</name>
+            <name>TinyDDS</name>
             <properties>
                 <property-file>${user.home}/.sunspot.properties</property-file>
                 <property-file>build.properties</property-file>
@@ -66,6 +66,19 @@
                 <action name="debug">
                     <script>nbproject/ide-file-targets.xml</script>
                     <target>debug-nb</target>
+                </action>
+                <action name="run.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-selected-file-in-src</target>
+                    <context>
+                        <property>run.class</property>
+                        <folder>src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
                 </action>
             </ide-actions>
             <export>

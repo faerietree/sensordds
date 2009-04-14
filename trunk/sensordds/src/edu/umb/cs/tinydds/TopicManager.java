@@ -5,6 +5,8 @@
 
 package edu.umb.cs.tinydds;
 
+import edu.umb.cs.tinydds.DDSimpl.ContentFilteredTopicImpl;
+import edu.umb.cs.tinydds.DDSimpl.SensorContentFilteredTopic;
 import edu.umb.cs.tinydds.utils.Logger;
 
 import edu.umb.cs.tinydds.utils.TopicConstraintMatcher;
@@ -68,10 +70,11 @@ public class TopicManager {
         
         Vector matchedFilteredTopics = new Vector();
         
-        //insert magic here.
         Enumeration filteredTopics = getContentFilteredTopics(topic);
+        
         while(filteredTopics.hasMoreElements()){
-            ContentFilteredTopic filteredTopic = (ContentFilteredTopic)filteredTopics.nextElement();
+            SensorContentFilteredTopic filteredTopic = (SensorContentFilteredTopic)filteredTopics.nextElement();
+            
             if(matcher.match(filteredTopic, value)){
                 matchedFilteredTopics.addElement(filteredTopic);
             }
@@ -92,7 +95,13 @@ public class TopicManager {
         Vector subscriberAddresses = getAddressesForTopic(topicDescription);
         if(subscriberAddresses == null){
             subscriberAddresses = new Vector();
-            topics.put(topicDescription, subscriberAddresses);
+            
+            if(topicDescription instanceof ContentFilteredTopic){
+                topics.put(new SensorContentFilteredTopic((ContentFilteredTopicImpl)topicDescription), subscriberAddresses);
+            }
+            else {    
+                topics.put(topicDescription, subscriberAddresses);
+            }
         }
         
         //this needs to be a Long to add to a Collection.  Fix this awful variable name.
@@ -132,8 +141,8 @@ public class TopicManager {
         while(allTopics.hasMoreElements()){
             TopicDescription topicFiltered = (TopicDescription)allTopics.nextElement();
             
-            if(topicFiltered instanceof ContentFilteredTopic && 
-               topic.get_type_name().equals(topicFiltered.get_type_name())){
+            if(topicFiltered instanceof SensorContentFilteredTopic && 
+                    topic.get_type_name().equals(topicFiltered.get_type_name())){
                 
                 foo.addElement(topicFiltered);
             }

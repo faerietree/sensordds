@@ -46,7 +46,6 @@ public class TopicImpl extends TopicDescriptionImpl implements Topic {
     }
 
     public void read(DataInputStream is) throws IOException {
-        
         this.name = is.readUTF();
         this.type_name = is.readUTF();
     }

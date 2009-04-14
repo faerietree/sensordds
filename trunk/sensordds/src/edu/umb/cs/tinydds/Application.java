@@ -130,7 +130,7 @@ public class Application implements Observer {
         } 
         else if (obj.equals(dataReader)) {
             // data from DataReader
-            Message msg = (Message) arg;
+            PubSubMessage msg = (PubSubMessage) arg;
             MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
             int light = Utils.readBigEndInt(payload.get(), 0);
             logger.logInfo("We got data from " + IEEEAddress.toDottedHex(msg.getOriginator()) + " value = " + light);

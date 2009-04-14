@@ -31,8 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.umb.cs.tinydds.L4;
 
+import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.L3.L3;
-import edu.umb.cs.tinydds.Message;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
 
@@ -49,5 +49,5 @@ public abstract class L4 extends Observable implements Observer {
         l3.addObserver(this);
     }
 
-    public abstract int send(Message msg);
+    public abstract int send(AbstractMessage msg);
 }

@@ -35,7 +35,7 @@ import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.L3.AddressFiltering;
 import edu.umb.cs.tinydds.L3.L3;
-import edu.umb.cs.tinydds.Message;
+import edu.umb.cs.tinydds.PubSubMessage;
 import edu.umb.cs.tinydds.MessagePayload;
 import edu.umb.cs.tinydds.MessagePayloadBytes;
 import edu.umb.cs.tinydds.TopicManager;
@@ -78,15 +78,15 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
     }
 
     public void update(Observable obj, Object arg) {
-        Message msg = (Message) arg;
+        PubSubMessage msg = (PubSubMessage) arg;
         
         logger.logInfo("update:receive message subject=" + msg.getSubject() + " topic=" + msg.getTopic() + " orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender()));
        
-        logger.logInfo("subject="+msg.getSubject()+" topic type:"+msg.getTopicType()+" topic name:"+msg.getTopic().get_name()
-                +" topic type:"+msg.getTopic().get_type_name()+" orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender())
-                +" receiver="+AddressFiltering.longToAddress(msg.getReceiver()));
+//        logger.logInfo("subject="+msg.getSubject()+" topic type:"+msg.getTopicType()+" topic name:"+msg.getTopic().get_name()
+//                +" topic type:"+msg.getTopic().get_type_name()+" orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender())
+//                +" receiver="+AddressFiltering.longToAddress(msg.getReceiver()));
         
-        if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {  //publisher gets here
+        if (msg.getSubject() == PubSubMessage.SUBJECT_SUBSCRIBE) {  //publisher gets here
             
             logger.logInfo("update:subscribe message");
           
@@ -97,7 +97,7 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
             //subscriptionAddresses.put(topic, new Long(msg.getSender()));
             //notifyObservers(arg);
         }
-        if (msg.getSubject() == Message.SUBJECT_DATA) {  
+        if (msg.getSubject() == PubSubMessage.SUBJECT_DATA) {  
             
             if (subscribedTopic.contains(msg.getTopic())) {   //subscriber gets here
                 logger.logInfo("update:we're intrested in this topic, push up");
@@ -118,13 +118,13 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         }
     }
 
-    public int send(Message msg) {
+    public int send(PubSubMessage msg) {
         logger.logInfo("send:msg");
-        if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
+        if (msg.getSubject() == PubSubMessage.SUBJECT_SUBSCRIBE) {
             msg.setReceiver(L3.BROADCAST_ADDRESS);
             return tinygiop.send(msg);
         } 
-        else if (msg.getSubject() == Message.SUBJECT_DATA) {   //publishing this 
+        else if (msg.getSubject() == PubSubMessage.SUBJECT_DATA) {   //publishing this 
             
             Vector addresses = topicManager.getAddressesForTopic(msg.getTopic());
             if (addresses != null) {
@@ -153,8 +153,8 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         //topicWeight.put(topic, new Integer(0));
         weight[0] = 1;
         MessagePayload payload = new MessagePayloadBytes(weight);
-        Message msg = new Message(payload);
-        msg.setSubject(Message.SUBJECT_SUBSCRIBE);
+        PubSubMessage msg = new PubSubMessage(payload);
+        msg.setSubject(PubSubMessage.SUBJECT_SUBSCRIBE);
         msg.setTopic(topic);
         msg.setReceiver(L3.BROADCAST_ADDRESS);
         msg.setOriginator(L3.getAddress());

@@ -33,7 +33,7 @@ package edu.umb.cs.tinydds.DDSimpl;
 import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.L3.L3;
-import edu.umb.cs.tinydds.Message;
+import edu.umb.cs.tinydds.PubSubMessage;
 import edu.umb.cs.tinydds.MessagePayload;
 import edu.umb.cs.tinydds.MessagePayloadBytes;
 import edu.umb.cs.tinydds.OERP.OERP;
@@ -94,8 +94,8 @@ public class PublisherImpl extends Observable implements Publisher {
 
     public void publish(DataWriter dataWriter, MessagePayload payload) {
         logger.logInfo("publish:topic " + dataWriter.get_topic());
-        Message msg = new Message(payload);
-        msg.setSubject(Message.SUBJECT_DATA);
+        PubSubMessage msg = new PubSubMessage(payload);
+        msg.setSubject(PubSubMessage.SUBJECT_DATA);
         msg.setTopic(dataWriter.get_topic());
         msg.setOriginator(L3.getAddress());
         if (oerp == null) {

@@ -32,7 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package edu.umb.cs.tinydds.DDSimpl;
 
 import edu.umb.cs.tinydds.DDS;
-import edu.umb.cs.tinydds.Message;
+import edu.umb.cs.tinydds.PubSubMessage;
 import edu.umb.cs.tinydds.OERP.OERP;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
@@ -98,7 +98,7 @@ public class SubscriberImpl extends Observable implements Subscriber, Observer {
         logger.logInfo("update");
         
         //only care about getting subscription data ... maybe
-        if(obj.equals(oerp) && (arg instanceof Message) && (((Message)arg).getSubject() == Message.SUBJECT_DATA) ) {
+        if(obj.equals(oerp) && (arg instanceof PubSubMessage) && (((PubSubMessage)arg).getSubject() == PubSubMessage.SUBJECT_DATA) ) {
             logger.logInfo("push up");
             notifyObservers(arg);
         }

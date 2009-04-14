@@ -45,4 +45,15 @@
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
         </java>
     </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-src">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="${sunspot.classpath}"/>
+                <pathelement location="build"/>
+            </classpath>
+        </java>
+    </target>
 </project>

@@ -79,7 +79,12 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 
     public void update(Observable obj, Object arg) {
         Message msg = (Message) arg;
+        
         logger.logInfo("update:receive message subject=" + msg.getSubject() + " topic=" + msg.getTopic() + " orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender()));
+       
+        logger.logInfo("subject="+msg.getSubject()+" topic type:"+msg.getTopicType()+" topic name:"+msg.getTopic().get_name()
+                +" topic type:"+msg.getTopic().get_type_name()+" orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender())
+                +" receiver="+AddressFiltering.longToAddress(msg.getReceiver()));
         
         if (msg.getSubject() == Message.SUBJECT_SUBSCRIBE) {  //publisher gets here
             

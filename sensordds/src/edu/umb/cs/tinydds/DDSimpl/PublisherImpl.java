@@ -107,6 +107,7 @@ public class PublisherImpl extends Observable implements Publisher {
     
         /* see if there are any filtered topics that fit the original topic */
         MessagePayloadBytes bytes = (MessagePayloadBytes)payload;
+        
         Vector subTopics = topicManager.findFilteredTopics(msg.getTopic(), Utils.readBigEndInt(bytes.get(), 0));
         Enumeration list = subTopics.elements();
         while (list.hasMoreElements()) {

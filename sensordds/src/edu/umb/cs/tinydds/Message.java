@@ -41,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import org.omg.dds.ContentFilteredTopic;
 import org.omg.dds.Topic;
 import org.omg.dds.TopicDescription;
 
@@ -52,9 +53,9 @@ import org.omg.dds.TopicDescription;
 // This is JavaBean style class, it should be self-contain.
 public class Message {
 
-    public static final int SUBJECT_NONE = 0;
-    public static final int SUBJECT_SUBSCRIBE = 1;
-    public static final int SUBJECT_DATA = 2;
+    public static final short SUBJECT_NONE = 0;
+    public static final short SUBJECT_SUBSCRIBE = 1;
+    public static final short SUBJECT_DATA = 2;
     
     public static final byte TOPIC = 0;
     public static final byte CONTENT_FILTERED_TOPIC = 1;
@@ -64,10 +65,10 @@ public class Message {
     protected long originator;
     protected byte topicType;
     protected TopicDescription topic;
-    protected int subject;
+    protected short subject;
     protected MessagePayload payload;
 
-    Message(long sender, long receiver, long originator, TopicDescription topic, int subject, MessagePayload payload) {
+    Message(long sender, long receiver, long originator, TopicDescription topic, short subject, MessagePayload payload) {
         this.sender = sender;
         this.receiver = receiver;
         this.originator = originator;
@@ -87,6 +88,7 @@ public class Message {
     public Message() {
         //this(Spot.getInstance().getRadioPolicyManager().getIEEEAddress(), L3.NO_ADDRESS, L3.getAddress(), null, Message.SUBJECT_NONE, null);
         this.sender = Spot.getInstance().getRadioPolicyManager().getIEEEAddress();
+        
         this.receiver = L3.NO_ADDRESS;
         this.originator = L3.getAddress();
         
@@ -117,9 +119,9 @@ public class Message {
         this.topic = topic;
     
         //lolh4x
-        if (topic instanceof TopicImpl) {
+        if (topic instanceof Topic) {
             topicType = TOPIC;
-        } else if (topic instanceof ContentFilteredTopicImpl) {
+        } else if (topic instanceof ContentFilteredTopic) {
             topicType = CONTENT_FILTERED_TOPIC;
         }
     }
@@ -141,18 +143,11 @@ public class Message {
             dout.writeLong(getReceiver());
             dout.writeLong(getOriginator());
             
-            //dout.writeUTF(getTopic());
-//            if(topic instanceof TopicImpl){
-//                dout.writeByte(TOPIC);
-//            }
-//            else if(topic instanceof ContentFilteredTopicImpl){
-//                dout.writeByte(CONTENT_FILTERED_TOPIC);
-//            }
             dout.writeByte(topicType);   //which type of topic this is
             
             ((TopicDescriptionImpl)topic).write(dout); //write topic
             
-            dout.writeShort((short) getSubject());
+            dout.writeShort(getSubject());
             dout.write(payload.marshall());
             dout.flush();
         } catch (IOException ex) {
@@ -181,12 +176,11 @@ public class Message {
             else if(topicType == CONTENT_FILTERED_TOPIC){
                 topic = new ContentFilteredTopicImpl();
             }
-            
             topic.read(din);
-            
             setTopic(topic);
             
             setSubject(din.readShort());
+            
             din.read(b);
             payload.demarshall(b);
        } catch (IOException ex) {
@@ -199,7 +193,7 @@ public class Message {
         return subject;
     }
 
-    public void setSubject(int subject) {
+    public void setSubject(short subject) {
         this.subject = subject;
     }
 
@@ -214,5 +208,30 @@ public class Message {
     public byte getTopicType(){
         return topicType;
     }
+    
+    
+//    public static void main(String args[]){
+//        
+//        String filter_expression = "Phenom:light > %n";
+//        String[] expression_parameters = {"100"};
+//      
+//        TopicImpl topic = new TopicImpl(null, "LightSensorZ", "light");
+//        
+//        ContentFilteredTopicImpl t = new ContentFilteredTopicImpl("TopicSensorZ", topic, filter_expression, expression_parameters);
+//        
+//        byte data[] = new byte[4];
+//        Utils.writeBigEndInt(data, 0, 100);
+//        
+//        MessagePayloadBytes payload = new MessagePayloadBytes(data);
+//
+//        Message message = new Message(123, 456, 789, t, SUBJECT_DATA, payload);
+//        
+//        byte[] bitez = message.marshall();
+//        
+//        Message message1 = new Message();
+//        message1.demarshall(bitez);
+//        
+//        System.out.println(message1.getSubject());
+//    }
 }
     

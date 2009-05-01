@@ -5,9 +5,9 @@
 
 package edu.umb.cs.tinydds.io;
 
-import edu.umb.cs.tinydds.aggregate.Geometry.Rectangle2D;
-import edu.umb.cs.tinydds.aggregate.Geometry.Circle;
-import edu.umb.cs.tinydds.aggregate.Geometry;
+import edu.umb.cs.tinydds.utils.Geometry.Rectangle2D;
+import edu.umb.cs.tinydds.utils.Geometry.Circle;
+import edu.umb.cs.tinydds.utils.Geometry;
 import java.util.Date;
 import java.util.Random;
 

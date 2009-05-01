@@ -30,12 +30,15 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.umb.cs.tinydds;
 
+import com.sun.spot.peripheral.Spot;
 import com.sun.spot.sensorboard.peripheral.TemperatureInput;
 import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderListenerImpl;
 import edu.umb.cs.tinydds.DDSimpl.DomainParticipantImpl;
+import edu.umb.cs.tinydds.utils.Geometry;
+import edu.umb.cs.tinydds.io.GPSSensor;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.io.LightSensor;
 import edu.umb.cs.tinydds.utils.Logger;
@@ -56,6 +59,7 @@ import org.omg.dds.Topic;
 /**
  *
  * @author pruet
+ * @author francesco    Added gps sensor support 04/25/09
  */
 
 /* Testing application, press left hardware button for subscribing,
@@ -73,6 +77,7 @@ public class Application implements Observer {
     protected DataReaderListener dataReaderListener = null;
     protected LED leds = null;
     protected LightSensor lightSensor = null;
+    protected GPSSensor gps = null;  // Encapsulates real gps or simulates one
 
     public Application() {
         // Misc initialization
@@ -82,6 +87,10 @@ public class Application implements Observer {
         leds = new LED();
         
         lightSensor = new LightSensor();
+        // Hard coded box of 60x60 nautical miles near UMass for GPS simulation
+        Geometry geom = new Geometry();
+        Geometry.Rectangle2D box = geom.new Rectangle2D(-70, 43, -69, 42);
+        gps = new GPSSensor(box, false); // false means node is fixed
 
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
@@ -91,7 +100,11 @@ public class Application implements Observer {
         publisher = domainParticipant.create_publisher(null);
         dataWriter = publisher.create_datawriter(topic, null);  
         
-        logger.logInfo("initiate");
+        logger.logInfo("initiate node ID: " +
+                IEEEAddress.toDottedHex(Spot.getInstance().
+                getRadioPolicyManager().getIEEEAddress()));
+        logger.logInfo("lat = " + gps.getLatitude() + "; lon = " +
+                       gps.getLongitude() + "; elev = " + gps.getElevation());
     }
 
     public void update(Observable obj, Object arg) {

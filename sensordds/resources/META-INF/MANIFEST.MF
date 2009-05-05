@@ -1,6 +1,6 @@
 MIDlet-Name: SensorDDS
 MIDlet-Version: 1.0.2
-MIDlet-Vendor: Anzo Group
+MIDlet-Vendor: Sun Microsystems Inc
 MIDlet-1: DDS, , edu.umb.cs.tinydds.DDS
 MIDlet-2: DDS_DB, , edu.umb.cs.tinydds.DDS_BS
 MicroEdition-Profile: IMP-1.0

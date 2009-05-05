@@ -25,8 +25,8 @@ import org.omg.dds.Topic;
 public class SensorContentFilteredTopic extends TopicDescriptionImpl implements ContentFilteredTopic {
 
     protected Expression exp;
-    protected String phenom;
     protected ContentFilteredTopicImpl contentFilteredTopic;
+    protected Hashtable selectors;
     
     /**
      * 
@@ -44,7 +44,6 @@ public class SensorContentFilteredTopic extends TopicDescriptionImpl implements 
     public SensorContentFilteredTopic() {
         contentFilteredTopic = new ContentFilteredTopicImpl();
     }
-    
     
     /**
      * 
@@ -80,9 +79,13 @@ public class SensorContentFilteredTopic extends TopicDescriptionImpl implements 
             ex.printStackTrace();
         }
         
-        phenom = parser.getPhenom();
+        selectors = parser.getSelectors();
     }
 
+    public Hashtable getSelectors(){
+        return selectors;
+    }
+    
     public String[] get_expression_parameters() {
         return contentFilteredTopic.get_expression_parameters();
     }
@@ -99,17 +102,9 @@ public class SensorContentFilteredTopic extends TopicDescriptionImpl implements 
         contentFilteredTopic.set_expression_parameters(expression_parameters);
     }
 
-    //public String get_name() {
-    //    return contentFilteredTopic.get_name();
-    //}
-
     public DomainParticipant get_participant() {
         return contentFilteredTopic.get_participant();
     }
-
-    //public String get_type_name() {
-    //    return contentFilteredTopic.get_type_name();
-    //}
 
     public void set_participant(DomainParticipant dp) {
         contentFilteredTopic.set_participant(dp);
@@ -120,7 +115,7 @@ public class SensorContentFilteredTopic extends TopicDescriptionImpl implements 
     }
     
     public String getPhenomenon(){
-        return phenom;
+        return type_name;
     }
     
     public void read(DataInputStream is) throws IOException {

@@ -5,16 +5,23 @@ public interface DDSParserConstants {
 
   int EOF = 0;
   int PHENOM = 5;
-  int AND = 6;
-  int OR = 7;
-  int LPAREN = 8;
-  int RPAREN = 9;
-  int EQUALS = 10;
-  int NOTEQUAL = 11;
-  int LT = 12;
-  int GT = 13;
-  int NUMBER = 14;
-  int ATOM = 15;
+  int TEMPORAL = 6;
+  int BEFORE = 7;
+  int AFTER = 8;
+  int BETWEEN = 9;
+  int AND = 10;
+  int OR = 11;
+  int LPAREN = 12;
+  int RPAREN = 13;
+  int EQUALS = 14;
+  int NOTEQUAL = 15;
+  int LT = 16;
+  int GT = 17;
+  int COMMA = 18;
+  int NATURALNUM = 19;
+  int REALNUM = 20;
+  int REALPART = 21;
+  int ATOM = 22;
 
   int DEFAULT = 0;
 
@@ -24,16 +31,23 @@ public interface DDSParserConstants {
     "\"\\t\"",
     "\"\\r\"",
     "\"\\n\"",
-    "\"Phenom:\"",
-    "\"and\"",
-    "\"or\"",
+    "\"Phenom\"",
+    "\"Temporal\"",
+    "<BEFORE>",
+    "<AFTER>",
+    "<BETWEEN>",
+    "<AND>",
+    "<OR>",
     "\"(\"",
     "\")\"",
     "\"=\"",
     "\"<>\"",
     "\"<\"",
     "\">\"",
-    "<NUMBER>",
+    "\",\"",
+    "<NATURALNUM>",
+    "<REALNUM>",
+    "<REALPART>",
     "<ATOM>",
   };
 

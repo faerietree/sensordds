@@ -6,6 +6,7 @@
 package edu.umb.cs.tinydds.fuzzyAggregation;
 
 import edu.umb.cs.tinydds.utils.Geometry;
+import java.util.Vector;
 
 /**
  *
@@ -30,18 +31,11 @@ public interface Aggregator {
 	 */
 	public void addData(String phenom, Geometry geom, long timestamp, double value);
 
-	/**
-     *
-	 * @param function
-	 * @param phenom
-	 * @param geom
-	 * @param startTime
-	 * @param endTime
-	 * @return
-	 */
-	public double getAggregation(String function, String phenom, Geometry geom,
-            long startTime, long endTime);
+	
+	public Vector getPhenomAggregation(String function, String phenom);
 
+        
+        public Vector getTemporalAggregation(String function, String phenom);
 	/**
 	 *
 	 * @param function

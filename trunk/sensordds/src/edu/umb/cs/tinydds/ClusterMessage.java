@@ -22,10 +22,21 @@ public class ClusterMessage extends AbstractMessage
     public static final byte NEED_CH= 0;
     public static final byte CH_REPLY = 1;
     public static final byte CM_ACK = 2;
+    public static final byte MY_CMS = 3;
+
     
     protected MessagePayload payload;
     protected byte msgType;
-    
+
+    public ClusterMessage() {
+        super();
+    }
+
+    ClusterMessage(MessagePayload payload) {
+        this();
+        this.payload = payload;
+    }
+
     ClusterMessage(long sender, long receiver, long originator,  MessagePayload payload) 
     {
         super((byte)0, sender, receiver, originator);
@@ -58,7 +69,7 @@ public class ClusterMessage extends AbstractMessage
         DataOutputStream dout = new DataOutputStream(bout);
         
         try {
-            dout.writeByte(messageType);    //identify this as a PubSubMessage
+            dout.writeByte(messageType);    //identify this as a ClusterMessage
             
             dout.writeLong(getSender());
             dout.writeLong(getReceiver());
@@ -95,5 +106,4 @@ public class ClusterMessage extends AbstractMessage
         }
 
     }
-    
 }

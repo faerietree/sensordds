@@ -82,12 +82,11 @@ public class ApplicationBS implements Observer {
 
     public ApplicationBS() {
         // Misc initialization
-        logger = new Logger("Application");
+        logger = new Logger("Application Base");
         switchs = new Switch();
         ((Observable) switchs).addObserver(this);
         leds = new LED();
         
-        lightSensor = new LightSensor();
         // Hard coded box of 60x60 nautical miles near UMass for GPS simulation
         Geometry geom = new Geometry();
         Geometry.Rectangle2D box = geom.new Rectangle2D(-70, 43, -69, 42);
@@ -95,11 +94,6 @@ public class ApplicationBS implements Observer {
 
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
-        
-        Topic topic = domainParticipant.create_topic("LightSensor", "light"); 
-        
-        publisher = domainParticipant.create_publisher(null);
-        dataWriter = publisher.create_datawriter(topic, null);  
         
         logger.logInfo("initiate BASE STATION ID: " +
                 IEEEAddress.toDottedHex(Spot.getInstance().
@@ -112,18 +106,7 @@ public class ApplicationBS implements Observer {
         logger.logInfo("update");
         if (obj.equals(switchs)) {
             SwitchStatus status = (SwitchStatus) arg;
-            if (status.getChanged() == 1) { // publish
-                // Publish data
-                logger.logInfo("publish data");
-                byte data[] = new byte[4];
-                try {
-                    Utils.writeBigEndInt(data, 0, lightSensor.getValue());
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-                MessagePayloadBytes payload = new MessagePayloadBytes(data);
-                dataWriter.write(payload);
-            } else if (status.getChanged() == 0) {
+            if (status.getChanged() == 0) {
                 // Create subscriber
                 // FIXME: Some flag should be put here, we need to publish only once
                 logger.logInfo("subscribe");

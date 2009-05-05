@@ -23,7 +23,7 @@ public class MessageFactory {
             message = new PubSubMessage(new MessagePayloadBytes(new byte[data.length]));
         }
         else if(type == ClusterMessage){
-            //do work here
+            message = new ClusterMessage(new MessagePayloadBytes(new byte[data.length]));
         }
         
         return message;

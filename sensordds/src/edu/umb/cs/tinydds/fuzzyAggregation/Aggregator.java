@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package edu.umb.cs.tinydds.fuzzyAggregation;
 
 import edu.umb.cs.tinydds.utils.Geometry;
@@ -31,12 +26,31 @@ public interface Aggregator {
 	 */
 	public void addData(String phenom, Geometry geom, long timestamp, double value);
 
-	
+	/**
+         * This returns a Vector of size 3 with the elements in the following order
+         * 0 - value of type Double or String (Notice the capitol 'D')
+         * 1 - timestamp of type Long (Notice the capitol 'L')
+         * 2 - geometry of type Geometry. (just make this null for now)
+         * 
+         * @param function
+         * @param phenom
+         * @return
+         */
 	public Vector getPhenomAggregation(String function, String phenom);
 
-        
+        /**
+         * This returns a Vector of size 3 with the elements in the following order
+         * 0 - value of type Double (Notice the capitol 'D')
+         * 1 - timestamp of type Long (Notice the capitol 'L')
+         * 2 - geometry of type Geometry. (just make this null for now)
+         * 
+         * @param function
+         * @param phenom
+         * @return
+         */
         public Vector getTemporalAggregation(String function, String phenom);
-	/**
+	
+        /**
 	 *
 	 * @param function
 	 * @param phenom

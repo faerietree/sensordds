@@ -90,7 +90,7 @@ public class DDS_BS extends MIDlet {
         //Start application
         new ApplicationBS();
         //Show LED status
-        leds.setColor(7, LEDColor.GREEN);
+        leds.setColor(7, LEDColor.BLUE);
         leds.setOn(7);
     }
 

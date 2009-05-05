@@ -75,7 +75,7 @@ public class TopicManager {
         while(filteredTopics.hasMoreElements()){
             SensorContentFilteredTopic filteredTopic = (SensorContentFilteredTopic)filteredTopics.nextElement();
             
-            if(matcher.match(filteredTopic, value)){
+            if(matcher.match(filteredTopic, value, System.currentTimeMillis(), null)){
                 matchedFilteredTopics.addElement(filteredTopic);
             }
         }
@@ -128,6 +128,7 @@ public class TopicManager {
     }
     
     /**
+     * Finds filtered topics of topic with same type.
      * 
      * @param topic
      * @return
@@ -142,7 +143,7 @@ public class TopicManager {
             TopicDescription topicFiltered = (TopicDescription)allTopics.nextElement();
             
             if(topicFiltered instanceof SensorContentFilteredTopic && 
-                    topic.get_type_name().equals(topicFiltered.get_type_name())){
+               topic.get_type_name().equals(topicFiltered.get_type_name())){
                 
                 foo.addElement(topicFiltered);
             }

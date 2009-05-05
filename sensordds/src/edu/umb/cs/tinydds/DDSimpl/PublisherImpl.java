@@ -38,6 +38,7 @@ import edu.umb.cs.tinydds.MessagePayload;
 import edu.umb.cs.tinydds.MessagePayloadBytes;
 import edu.umb.cs.tinydds.OERP.OERP;
 import edu.umb.cs.tinydds.TopicManager;
+import edu.umb.cs.tinydds.fuzzyAggregation.AggregatorImpl;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 import java.util.Enumeration;
@@ -107,6 +108,10 @@ public class PublisherImpl extends Observable implements Publisher {
     
         /* see if there are any filtered topics that fit the original topic */
         MessagePayloadBytes bytes = (MessagePayloadBytes)payload;
+        
+        
+        String phenom = msg.getTopic().get_type_name();
+        AggregatorImpl.getInstance().addData(phenom, null, System.currentTimeMillis(), Utils.readBigEndInt(bytes.get(), 0));
         
         Vector subTopics = topicManager.findFilteredTopics(msg.getTopic(), Utils.readBigEndInt(bytes.get(), 0));
         Enumeration list = subTopics.elements();

@@ -60,12 +60,13 @@ import org.omg.dds.Topic;
  *
  * @author pruet
  * @author francesco    Added gps sensor support 04/25/09
+ * @author francesco    This is now a Base Station
  */
 
 /* Testing application, press left hardware button for subscribing,
  * right hardware button for publishing 
  */
-public class Application implements Observer {
+public class ApplicationBS implements Observer {
 
     protected DomainParticipant domainParticipant = null;
     protected Publisher publisher = null;
@@ -79,7 +80,7 @@ public class Application implements Observer {
     protected LightSensor lightSensor = null;
     protected GPSSensor gps = null;  // Encapsulates real gps or simulates one
 
-    public Application() {
+    public ApplicationBS() {
         // Misc initialization
         logger = new Logger("Application");
         switchs = new Switch();
@@ -100,7 +101,7 @@ public class Application implements Observer {
         publisher = domainParticipant.create_publisher(null);
         dataWriter = publisher.create_datawriter(topic, null);  
         
-        logger.logInfo("initiate NODE ID: " +
+        logger.logInfo("initiate BASE STATION ID: " +
                 IEEEAddress.toDottedHex(Spot.getInstance().
                 getRadioPolicyManager().getIEEEAddress()));
         logger.logInfo("lat = " + gps.getLatitude() + "; lon = " +

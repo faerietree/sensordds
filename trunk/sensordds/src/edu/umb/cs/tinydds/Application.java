@@ -47,6 +47,8 @@ import edu.umb.cs.tinydds.utils.Observer;
 import edu.umb.cs.tinydds.io.Switch;
 import edu.umb.cs.tinydds.io.SwitchStatus;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.omg.dds.ContentFilteredTopic;
 import org.omg.dds.DataReader;
 import org.omg.dds.DataReaderListener;
@@ -67,9 +69,15 @@ import org.omg.dds.Topic;
  */
 public class Application implements Observer {
 
+    protected final long LIGHT_DELAY = 5 * 1000;
+    protected final long TEMP_DELAY = 10 * 1000;
+    
     protected DomainParticipant domainParticipant = null;
     protected Publisher publisher = null;
-    protected DataWriter dataWriter = null;
+    
+    protected DataWriter lightDataWriter = null;
+    protected DataWriter tempDataWriter = null;
+    
     protected Switch switchs = null;
     protected Logger logger = null;
     protected Subscriber subscriber = null;
@@ -78,8 +86,12 @@ public class Application implements Observer {
     protected LED leds = null;
     protected LightSensor lightSensor = null;
     protected GPSSensor gps = null;  // Encapsulates real gps or simulates one
-
+    protected boolean isPublishing = false;
+    protected Timer measurementTimer;
+    protected TimerTask lightTimerTask, tempTimerTask;
+    
     public Application() {
+        
         // Misc initialization
         logger = new Logger("Application");
         switchs = new Switch();
@@ -87,6 +99,7 @@ public class Application implements Observer {
         leds = new LED();
         
         lightSensor = new LightSensor();
+        
         // Hard coded box of 60x60 nautical miles near UMass for GPS simulation
         Geometry geom = new Geometry();
         Geometry.Rectangle2D box = geom.new Rectangle2D(-70, 43, -69, 42);
@@ -95,10 +108,17 @@ public class Application implements Observer {
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
         
-        Topic topic = domainParticipant.create_topic("LightSensor", "light"); 
+        Topic lightTopic = domainParticipant.create_topic("LightSensor", "light"); 
+        Topic tempTopic = domainParticipant.create_topic("TempSensor", "temp");
         
         publisher = domainParticipant.create_publisher(null);
-        dataWriter = publisher.create_datawriter(topic, null);  
+        
+        lightDataWriter = publisher.create_datawriter(lightTopic, null);  
+        tempDataWriter = publisher.create_datawriter(tempTopic, null);
+        
+        measurementTimer = new Timer();
+        
+        createTimerTasks();
         
         logger.logInfo("initiate NODE ID: " +
                 IEEEAddress.toDottedHex(Spot.getInstance().
@@ -107,12 +127,10 @@ public class Application implements Observer {
                        gps.getLongitude() + "; elev = " + gps.getElevation());
     }
 
-    public void update(Observable obj, Object arg) {
-        logger.logInfo("update");
-        if (obj.equals(switchs)) {
-            SwitchStatus status = (SwitchStatus) arg;
-            if (status.getChanged() == 1) { // publish
-                // Publish data
+    
+    private void createTimerTasks(){
+        lightTimerTask = new TimerTask(){
+            public void run() {
                 logger.logInfo("publish data");
                 byte data[] = new byte[4];
                 try {
@@ -121,8 +139,51 @@ public class Application implements Observer {
                     ex.printStackTrace();
                 }
                 MessagePayloadBytes payload = new MessagePayloadBytes(data);
-                dataWriter.write(payload);
-            } else if (status.getChanged() == 0) {
+                lightDataWriter.write(payload);
+            }
+        };
+        
+        
+        tempTimerTask = new TimerTask(){
+            public void run() {
+            }
+        };
+    }
+    
+    public void update(Observable obj, Object arg) {
+        logger.logInfo("update");
+        if (obj.equals(switchs)) {
+            SwitchStatus status = (SwitchStatus) arg;
+            if (status.getChanged() == 1) {     // publish
+                
+                isPublishing = !isPublishing;
+                
+                if(isPublishing){ // turn on publishing
+                    logger.logInfo("turned on publishing");
+                    measurementTimer.scheduleAtFixedRate(lightTimerTask, 0, LIGHT_DELAY);
+                    //add tempTimerTask as well
+                }
+                else {
+                    logger.logInfo("turned off publishing");
+                 
+                    //this is probably a threading issue
+                    lightTimerTask.cancel();
+                    
+                    createTimerTasks();  
+                }
+                
+                // Publish data
+//                logger.logInfo("publish data");
+//                byte data[] = new byte[4];
+//                try {
+//                    Utils.writeBigEndInt(data, 0, lightSensor.getValue());
+//                } catch (IOException ex) {
+//                    ex.printStackTrace();
+//                }
+//                MessagePayloadBytes payload = new MessagePayloadBytes(data);
+//                dataWriter.write(payload);
+            } 
+            else if (status.getChanged() == 0) {
                 // Create subscriber
                 // FIXME: Some flag should be put here, we need to publish only once
                 logger.logInfo("subscribe");

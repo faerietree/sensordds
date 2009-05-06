@@ -31,25 +31,30 @@ public class TopicConstraintMatcher {
         
         Hashtable selectors = topic.getSelectors();        
         Hashtable vars = new Hashtable();
+
+        /* all the commented stuff below will be used once the 
+           aggregation class is finished */
+//        String phenomSelector = (String)selectors.get("Phenom");
+//        String temporalSelector = (String)selectors.get("Temporal");
+//        
+//        Vector record = null;
+//        
+//        if(phenomSelector != null){
+//            record = aggregator.getPhenomAggregation(phenomSelector, topic.getPhenomenon());
+//        }
+//        else {
+//            record = aggregator.getTemporalAggregation(temporalSelector, topic.getPhenomenon());
+//        }
+//        
+//        Double v = (Double)record.elementAt(0); //value
+//        Long ts = (Long)record.elementAt(1); //timestamp
+//        Geometry g = (Geometry)record.elementAt(2); //geometry
+//        
+//        vars.put("Phenom", Double.toString(v.doubleValue()));
+//        vars.put("Temporal", Long.toString(ts.longValue()));
         
-        String phenomSelector = (String)selectors.get("Phenom");
-        String temporalSelector = (String)selectors.get("Temporal");
-        
-        Vector record = null;
-        
-        if(phenomSelector != null){
-            record = aggregator.getPhenomAggregation(phenomSelector, topic.getPhenomenon());
-        }
-        else {
-            record = aggregator.getTemporalAggregation(temporalSelector, topic.getPhenomenon());
-        }
-        
-        Double v = (Double)record.elementAt(0); //value
-        Long ts = (Long)record.elementAt(1); //timestamp
-        Geometry g = (Geometry)record.elementAt(2); //geometry
-        
-        vars.put("Phenom", Double.toString(v.doubleValue()));
-        vars.put("Temporal", Long.toString(ts.longValue()));
+        vars.put("Phenom", Integer.toString(value));
+        vars.put("Temporal", Long.toString(timestamp));
         
         boolean result = topic.eval(vars);
         

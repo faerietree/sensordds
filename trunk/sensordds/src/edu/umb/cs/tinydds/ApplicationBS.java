@@ -37,8 +37,9 @@ import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderListenerImpl;
 import edu.umb.cs.tinydds.DDSimpl.DomainParticipantImpl;
+import edu.umb.cs.tinydds.io.GPS;
 import edu.umb.cs.tinydds.utils.Geometry;
-import edu.umb.cs.tinydds.io.GPSSensor;
+import edu.umb.cs.tinydds.io.SimulatedGPS;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.io.LightSensor;
 import edu.umb.cs.tinydds.utils.Logger;
@@ -78,7 +79,7 @@ public class ApplicationBS implements Observer {
     protected DataReaderListener dataReaderListener = null;
     protected LED leds = null;
     protected LightSensor lightSensor = null;
-    protected GPSSensor gps = null;  // Encapsulates real gps or simulates one
+    protected GPS gps = null;  // Encapsulates real gps or simulates one
 
     public ApplicationBS() {
         // Misc initialization
@@ -88,9 +89,9 @@ public class ApplicationBS implements Observer {
         leds = new LED();
         
         // Hard coded box of 60x60 nautical miles near UMass for GPS simulation
-        Geometry geom = new Geometry();
-        Geometry.Rectangle2D box = geom.new Rectangle2D(-70, 43, -69, 42);
-        gps = new GPSSensor(box, false); // false means node is fixed
+        Geometry geom = new Geometry().new Rectangle2D(-70.5, 43, -69.5, 42);
+        SimulatedGPS.configure(geom, false);
+        gps = SimulatedGPS.getInstance();
 
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
@@ -114,7 +115,7 @@ public class ApplicationBS implements Observer {
                 subscriber = domainParticipant.create_subscriber(null);
                 Topic topic = domainParticipant.create_topic("LightSensor", "light");
                 
-                String filter_expression = "Phenom:light > %n";
+                String filter_expression = "Phenom > %n";
                 String[] expression_parameters = {"100"};
                 
                 ContentFilteredTopic filteredTopic = domainParticipant.create_contentfilteredtopic("LightSensorZ", topic, filter_expression, expression_parameters);

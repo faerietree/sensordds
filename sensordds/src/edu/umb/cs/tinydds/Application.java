@@ -46,6 +46,7 @@ import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
 import edu.umb.cs.tinydds.io.Switch;
 import edu.umb.cs.tinydds.io.SwitchStatus;
+import edu.umb.cs.tinydds.io.TempSensor;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -85,6 +86,7 @@ public class Application implements Observer {
     protected DataReaderListener dataReaderListener = null;
     protected LED leds = null;
     protected LightSensor lightSensor = null;
+    protected TempSensor tempSensor = null;
     protected GPSSensor gps = null;  // Encapsulates real gps or simulates one
     protected boolean isPublishing = false;
     protected Timer measurementTimer;
@@ -99,6 +101,7 @@ public class Application implements Observer {
         leds = new LED();
         
         lightSensor = new LightSensor();
+        tempSensor = new TempSensor();
         
         // Hard coded box of 60x60 nautical miles near UMass for GPS simulation
         Geometry geom = new Geometry();
@@ -146,6 +149,15 @@ public class Application implements Observer {
         
         tempTimerTask = new TimerTask(){
             public void run() {
+                logger.logInfo("publish data");
+                byte data[] = new byte[4];
+                try {
+                    Utils.writeBigEndInt(data, 0, tempSensor.getValue());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                MessagePayloadBytes payload = new MessagePayloadBytes(data);
+                tempDataWriter.write(payload);
             }
         };
     }
@@ -154,6 +166,7 @@ public class Application implements Observer {
         logger.logInfo("update");
         if (obj.equals(switchs)) {
             SwitchStatus status = (SwitchStatus) arg;
+            
             if (status.getChanged() == 1) {     // publish
                 
                 isPublishing = !isPublishing;
@@ -161,27 +174,17 @@ public class Application implements Observer {
                 if(isPublishing){ // turn on publishing
                     logger.logInfo("turned on publishing");
                     measurementTimer.scheduleAtFixedRate(lightTimerTask, 0, LIGHT_DELAY);
-                    //add tempTimerTask as well
+                    measurementTimer.scheduleAtFixedRate(tempTimerTask, 0, TEMP_DELAY);
                 }
                 else {
                     logger.logInfo("turned off publishing");
                  
                     //this is probably a threading issue
                     lightTimerTask.cancel();
-                    
+                    tempTimerTask.cancel();
                     createTimerTasks();  
                 }
                 
-                // Publish data
-//                logger.logInfo("publish data");
-//                byte data[] = new byte[4];
-//                try {
-//                    Utils.writeBigEndInt(data, 0, lightSensor.getValue());
-//                } catch (IOException ex) {
-//                    ex.printStackTrace();
-//                }
-//                MessagePayloadBytes payload = new MessagePayloadBytes(data);
-//                dataWriter.write(payload);
             } 
             else if (status.getChanged() == 0) {
                 // Create subscriber

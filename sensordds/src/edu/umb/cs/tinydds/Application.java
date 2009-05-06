@@ -37,8 +37,9 @@ import com.sun.spot.util.Utils;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderListenerImpl;
 import edu.umb.cs.tinydds.DDSimpl.DomainParticipantImpl;
+import edu.umb.cs.tinydds.io.GPS;
 import edu.umb.cs.tinydds.utils.Geometry;
-import edu.umb.cs.tinydds.io.GPSSensor;
+import edu.umb.cs.tinydds.io.SimulatedGPS;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.io.LightSensor;
 import edu.umb.cs.tinydds.utils.Logger;
@@ -87,7 +88,7 @@ public class Application implements Observer {
     protected LED leds = null;
     protected LightSensor lightSensor = null;
     protected TempSensor tempSensor = null;
-    protected GPSSensor gps = null;  // Encapsulates real gps or simulates one
+    protected GPS gps = null;  // Encapsulates real gps or simulates one
     protected boolean isPublishing = false;
     protected Timer measurementTimer;
     protected TimerTask lightTimerTask, tempTimerTask;
@@ -104,9 +105,9 @@ public class Application implements Observer {
         tempSensor = new TempSensor();
         
         // Hard coded box of 60x60 nautical miles near UMass for GPS simulation
-        Geometry geom = new Geometry();
-        Geometry.Rectangle2D box = geom.new Rectangle2D(-70, 43, -69, 42);
-        gps = new GPSSensor(box, false); // false means node is fixed
+        Geometry geom = new Geometry().new Rectangle2D(-70.5, 43, -69.5, 42);
+        SimulatedGPS.configure(geom, false);
+        gps = SimulatedGPS.getInstance();
 
         // Create publisher
         domainParticipant = new DomainParticipantImpl();

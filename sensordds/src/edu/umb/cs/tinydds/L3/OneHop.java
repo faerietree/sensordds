@@ -145,13 +145,13 @@ public class OneHop extends L3 implements Runnable {
             try {
                 byte[] b = new byte[rgc_rx.getMaximumLength()];
                 
-                //PubSubMessage mesg = new PubSubMessage(new MessagePayloadBytes(new byte[b.length]));
-                AbstractMessage mesg = MessageFactory.create(b);
-                
                 dg.reset();
                 rgc_rx.receive(dg);
                 b = dg.getData();
+                
+                AbstractMessage mesg = MessageFactory.create(b);
                 mesg.demarshall(b);
+                
                 logger.logInfo("run:receive a connection from " + dg.getAddress());
                 //FIXME: This is a dirty hack, but I can't see how to fix better than this =_==
                 //Gotta find a way to fix the address of base station...

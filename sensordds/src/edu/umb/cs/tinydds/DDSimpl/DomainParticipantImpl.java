@@ -32,7 +32,6 @@ package edu.umb.cs.tinydds.DDSimpl;
 
 import edu.umb.cs.tinydds.utils.Logger;
 import java.util.Hashtable;
-import java.util.Vector;
 import org.omg.dds.ContentFilteredTopic;
 import org.omg.dds.DomainParticipant;
 import org.omg.dds.Publisher;

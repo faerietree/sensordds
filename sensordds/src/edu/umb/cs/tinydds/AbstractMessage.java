@@ -11,6 +11,8 @@ import edu.umb.cs.tinydds.L3.L3;
 /**
  *
  * @author matt
+ * @author francesco Added Lat, Lon, Elev. of sender to the messages (this is to
+ *                   needed to simulate radio distance)
  */
 public abstract class AbstractMessage {
     
@@ -18,6 +20,11 @@ public abstract class AbstractMessage {
     protected long sender;
     protected long receiver;
     protected long originator;
+    // The following adds overhead to the message - remember to eliminate if this
+    // application needs to be deployed on a real network
+    protected double senderLat;
+    protected double senderLon;
+    protected double senderElev;
 
     public AbstractMessage(byte messageType, long sender, long receiver, long originator) {
         this.messageType = messageType;
@@ -63,6 +70,30 @@ public abstract class AbstractMessage {
 
     public void setMessageType(byte messageType) {
         this.messageType = messageType;
+    }
+
+        public double getSenderElev() {
+        return senderElev;
+    }
+
+    public void setSenderElev(double elev) {
+        this.senderElev = elev;
+    }
+
+    public double getSenderLat() {
+        return senderLat;
+    }
+
+    public void setSenderLat(double lat) {
+        this.senderLat = lat;
+    }
+
+    public double getSenderLon() {
+        return senderLon;
+    }
+
+    public void setSenderLon(double lon) {
+        this.senderLon = lon;
     }
     
     public abstract byte[] marshall();

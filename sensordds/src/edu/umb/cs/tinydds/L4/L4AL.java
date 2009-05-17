@@ -42,7 +42,7 @@ import edu.umb.cs.tinydds.utils.Observable;
  *
  * @author pruet
  */
-public class L4AL extends L4 implements L3Observer {
+public class L4AL extends L4 implements L3Observer{
     Logger logger;
     
     public L4AL() {

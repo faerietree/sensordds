@@ -9,6 +9,7 @@ import edu.umb.cs.tinydds.utils.Geometry.Rectangle2D;
 import edu.umb.cs.tinydds.utils.Geometry.Circle;
 import edu.umb.cs.tinydds.utils.Geometry;
 import edu.umb.cs.tinydds.utils.Geometry.Polygon;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import java.util.Date;
 import java.util.Random;
@@ -18,7 +19,7 @@ import java.util.Random;
  *
  * @author francesco
  */
-public class SimulatedGPS implements GPS {
+public class SimulatedGPS implements GPS, GlobalConfiguration {
 
     private double lat;
     private double lon;
@@ -43,12 +44,9 @@ public class SimulatedGPS implements GPS {
     private static SimulatedGPS GPS;
     private Logger logger = new Logger("SimulatedGPS");
 
+    private static Geometry BOX = DEFAULT_GEOMETRY;
 
-    private static Geometry BOX = new Geometry().new Rectangle2D(-70, 43, -69, 42);
-    //gps = new SimulatedGPS(box, false); // false means node is fixed
-
-
-    public static SimulatedGPS getInstance(){
+    public static synchronized SimulatedGPS getInstance(){
         if(GPS == null){
             GPS = new SimulatedGPS(BOX, false);
         }
@@ -65,15 +63,18 @@ public class SimulatedGPS implements GPS {
         seed = startTime.getTime();
         generator = new Random();
         generator.setSeed(seed);
-        if(sandbox instanceof Rectangle2D)
-            logger.log(Logger.INFO, "Sandbox is a Rectangle");
+        if(sandbox instanceof Rectangle2D) {
+            logger.log(Logger.INFO, "initiate: Sandbox is a Rectangle");
             this.rect2dSandbox = (Rectangle2D) sandbox; // No checking that the rectagle is legit.
-        if(sandbox instanceof Circle)
-            logger.log(Logger.INFO, "Sandbox is a Circle");
+        }
+        if(sandbox instanceof Circle){
+            logger.log(Logger.INFO, "initiate: Sandbox is a Circle");
             this.circle2dSandbox = (Circle) sandbox; // No checking that the circle is legit.
-        if(sandbox instanceof Polygon)
-            logger.log(Logger.INFO, "Sandbox is a Polygon");
+        }
+        if(sandbox instanceof Polygon){
+            logger.log(Logger.INFO, "initiate: Sandbox is a Polygon");
             this.poly2dSandbox = (Polygon) sandbox; // No checking that the polygon is legit.
+        }
         setRandomPosition();
 
         if(adHoc){
@@ -100,6 +101,19 @@ public class SimulatedGPS implements GPS {
         lat = rect2dSandbox.getBottomRightCorner().getY() +
                 rect2dSandbox.height() * generator.nextDouble();
     }
+
+    public double getEuclidianDistFrom(double lat, double lon, double elev){
+        return Math.sqrt((this.lat - lat)*(this.lat - lat) +
+                    (this.lon - lon)*(this.lon - lon) +
+                    (this.elev - elev)*(this.elev - elev));
+    }
+
+    public static double getEuclidianDist(double lat1, double lon1, double elev1,
+                                          double lat2, double lon2, double elev2){
+         return Math.sqrt((lat1 - lat2)*(lat1 - lat2) +
+                          (lon1 - lon2)*(lon1 - lon2) +
+                          (elev1 - elev2)*(elev1 - elev2));
+   }
 
     /**
      *
@@ -151,14 +165,13 @@ public class SimulatedGPS implements GPS {
     }
 
     public static void main(String[] args){
-        Geometry geom = new Geometry();
-        Geometry.Rectangle2D box = geom.new Rectangle2D(-70, 43, -69, 42);
+        Geometry geom = new Geometry().new Rectangle2D(-80, 43, -79, 42);
 
-        SimulatedGPS gps = new SimulatedGPS(box, false);
-        System.out.println("Top left (lat, lon) (" + box.getTopLeftCorner().getY() +
-                           "," + box.getTopLeftCorner().getX() + ")");
-        System.out.println("Bottom right (lat, lon)(" + box.getBottomRightCorner().getY() +
-                           "," + box.getBottomRightCorner().getX() + ")");
+        SimulatedGPS.configure(geom, false);
+        SimulatedGPS gps = SimulatedGPS.getInstance();
+
+        double l = gps.getLatitude() - 0;
+
         System.out.println("Random Latitude is: " + gps.getLatitude());
         System.out.println("Random Longitude is: " + gps.getLongitude());
         System.out.println("Random elevation is: " + gps.getElevation());

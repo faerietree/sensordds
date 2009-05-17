@@ -30,11 +30,13 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.umb.cs.tinydds.OERP;
 
-import com.sun.spot.sensorboard.peripheral.LEDColor;
-import com.sun.spot.util.Utils;
+// import com.sun.spot.sensorboard.peripheral.LEDColor;
+import edu.umb.cs.cluster.ClusterManager;
+import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.L3.AddressFiltering;
 import edu.umb.cs.tinydds.L3.L3;
+import edu.umb.cs.tinydds.MessageFactory;
 import edu.umb.cs.tinydds.PubSubMessage;
 import edu.umb.cs.tinydds.MessagePayload;
 import edu.umb.cs.tinydds.MessagePayloadBytes;
@@ -43,13 +45,13 @@ import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOPObserver;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
-import java.util.Enumeration;
 import java.util.Vector;
 import org.omg.dds.TopicDescription;
 
 /**
  *
  * @author pruet
+ * @author francesco    Added ClusterManager member
  */
 public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 
@@ -59,32 +61,48 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
     LED leds;
     Vector subscribedTopic;
     TopicManager topicManager;
-    
-    public SpanningTree() {
-        super();
+    protected boolean isBaseStation;
+    ClusterManager clusterManager;
+
+    private SpanningTree() {
+         super();
         leds = new LED();
-        leds.setColor(0, LEDColor.RED);
-        leds.setColor(1, LEDColor.RED);
-        leds.setColor(2, LEDColor.RED);
-        leds.setColor(3, LEDColor.RED);
+//        leds.setColor(0, LEDColor.RED);
+//        leds.setColor(1, LEDColor.RED);
+//        leds.setColor(2, LEDColor.RED);
+//        leds.setColor(3, LEDColor.RED);
+//        leds.setOn(0);
+//        leds.setOn(1);
+//        leds.setOn(2);
+
         logger = new Logger("SpanningTree");
         logger.logInfo("initiate");
-        
+
         //topicWeight = new Hashtable();
         subscribedTopic = new Vector();
-        
+
         //subscriptionAddresses = new Hashtable();
         topicManager = TopicManager.getInstance();
+   }
+
+    public SpanningTree(boolean isBaseStation){
+        this();
+        this.isBaseStation = isBaseStation;
+        // Initialize CLuster Manager
+        if (this.isBaseStation) {
+            ClusterManager.setAsBaseStation();
+        }
+        ClusterManager.setDefaultMailer(this);
+        clusterManager = ClusterManager.getInstance(); // Instantiate (1st time)
     }
 
     public void update(Observable obj, Object arg) {
         PubSubMessage msg = (PubSubMessage) arg;
         
-        logger.logInfo("update:receive message subject=" + msg.getSubject() + " topic=" + msg.getTopic() + " orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender()));
-       
-//        logger.logInfo("subject="+msg.getSubject()+" topic type:"+msg.getTopicType()+" topic name:"+msg.getTopic().get_name()
-//                +" topic type:"+msg.getTopic().get_type_name()+" orig=" + AddressFiltering.longToAddress(msg.getOriginator()) + " from=" + AddressFiltering.longToAddress(msg.getSender())
-//                +" receiver="+AddressFiltering.longToAddress(msg.getReceiver()));
+        logger.logInfo("update:receive message subject=" + msg.getSubject() +
+                       " topic=" + msg.getTopic() + " orig=" +
+                       AddressFiltering.longToAddress(msg.getOriginator()) +
+                       " from=" + AddressFiltering.longToAddress(msg.getSender()));
         
         if (msg.getSubject() == PubSubMessage.SUBJECT_SUBSCRIBE) {  //publisher gets here
             
@@ -118,29 +136,36 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
         }
     }
 
-    public int send(PubSubMessage msg) {
-        logger.logInfo("send:msg");
-        if (msg.getSubject() == PubSubMessage.SUBJECT_SUBSCRIBE) {
-            msg.setReceiver(L3.BROADCAST_ADDRESS);
+    public int send(AbstractMessage msg) {
+        if(msg.getMessageType() == MessageFactory.CLUSTER_MESSAGE){
+            logger.logInfo("send:ClusterMSG");
             return tinygiop.send(msg);
-        } 
-        else if (msg.getSubject() == PubSubMessage.SUBJECT_DATA) {   //publishing this 
-            
-            Vector addresses = topicManager.getAddressesForTopic(msg.getTopic());
-            if (addresses != null) {
-                //Long receiverAddress = (Long)subscriptionAddresses.get(msg.getTopic());    
-                //we will fix this to support multiple receipents later
-                Long receiverAddress = (Long) addresses.firstElement();
-                msg.setReceiver(receiverAddress.longValue());
+        } else {
+            logger.logInfo("send:PubSubMSG");
+            if (((PubSubMessage) msg).getSubject() == PubSubMessage.SUBJECT_SUBSCRIBE) {
+                msg.setReceiver(L3.BROADCAST_ADDRESS);
                 return tinygiop.send(msg);
             }
+            else if (((PubSubMessage) msg).getSubject() == PubSubMessage.SUBJECT_DATA) {   //publishing this
 
-            logger.logInfo("send:no subscriber, drop");
+                Vector addresses = topicManager.getAddressesForTopic(((PubSubMessage) msg).getTopic());
+                if (addresses != null) {
+                    //Long receiverAddress = (Long)subscriptionAddresses.get(msg.getTopic());
+                    //we will fix this to support multiple receipents later
+                    Long receiverAddress = (Long) addresses.firstElement();
+                    msg.setReceiver(receiverAddress.longValue());
+                    return tinygiop.send(msg);
+                }
+                logger.logInfo("send:no subscriber, drop");
+            }
         }
         return DDS.FAIL;
     }
-    
 
+    public boolean isBaseStation() {
+        return isBaseStation;
+    }
+    
     public void run() {
     }
 

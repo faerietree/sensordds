@@ -67,10 +67,12 @@ public class OneHop extends L3 implements Runnable, GlobalConfiguration, Sender 
         //myAddress = new IEEEAddress(foo).asLong();
         
         logger = new Logger("OneHop");
-        logger.logInfo("initiated:");
-        logger.logInfo("initiated:my address is " + IEEEAddress.toDottedHex(L3.getAddress()));
-        //addressFiltering = new AddressFiltering(L3.getAddress());
-        logger.logInfo("initiated:start receiver thread");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiated:");
+        if(DEBUG && DBUG_LVL >= LIGHT)
+            logger.logInfo("initiated:my address is " + IEEEAddress.toDottedHex(L3.getAddress()));
+         if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiated:start receiver thread");
         flag = false;
         gps = SimulatedGPS.getInstance(); // Get GPS instance
         new Thread(this).start();
@@ -98,13 +100,15 @@ public class OneHop extends L3 implements Runnable, GlobalConfiguration, Sender 
         } else {
             url = "radiogram://broadcast:123";
         }
-        logger.logInfo("send:to:" + url);
+        if(DEBUG && DBUG_LVL >= LIGHT)
+            logger.logInfo("send:to:" + url);
 
         try {
             rgc_tx = (RadiogramConnection) Connector.open(url);
             dg = (Radiogram) rgc_tx.newDatagram(rgc_tx.getMaximumLength());
         } catch (IOException ex) {
-            logger.logError("send:can't open connection");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logError("send:can't open connection");
             ex.printStackTrace();
             return DDS.FAIL;
         }
@@ -114,31 +118,36 @@ public class OneHop extends L3 implements Runnable, GlobalConfiguration, Sender 
                 dg.reset();
                 int size = msg.marshall().length;
                 if (size > rgc_tx.getMaximumLength()) {
-                    logger.logError("send:message to large max=" +
-                                    rgc_tx.getMaximumLength() + " msg size= " + size);
+                    if(DEBUG && DBUG_LVL >= LIGHT)
+                        logger.logError("send:message to large max=" +
+                              rgc_tx.getMaximumLength() + " msg size= " + size);
                     return DDS.FAIL;
                 }
                 if(msg.getMessageType() == MessageFactory.CLUSTER_MESSAGE)
+                if(DEBUG && DBUG_LVL >= FULL)
                     logger.logInfo("Message code is: " + ((ClusterMessage)msg).getMsgCode());
                 dg.write(msg.marshall());
                 rgc_tx.send(dg);
                 rgc_tx.close();
                 flag = false;
             } catch (IOException ex) {
-                logger.logError("send:can't send message");
+                if(DEBUG && DBUG_LVL >= LIGHT)
+                    logger.logError("send:can't send message");
                 ex.printStackTrace();
                 if (rgc_tx != null) {
                     try {
                         rgc_tx.close();
                         flag = false;
                     } catch (IOException ex1) {
-                        logger.logError("send:can't close connection");
+                        if(DEBUG && DBUG_LVL >= MEDIUM)
+                            logger.logError("send:can't close connection");
                         ex1.printStackTrace();
                     }
                 }
                 return DDS.FAIL;
             }
-            logger.logInfo("send:done");
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.logInfo("send:done");
             return DDS.SUCCESS;
         }
         return DDS.FAIL;
@@ -152,9 +161,11 @@ public class OneHop extends L3 implements Runnable, GlobalConfiguration, Sender 
         try {
             rgc_rx = (RadiogramConnection) Connector.open("radiogram://:123");
             dg = (Radiogram) rgc_rx.newDatagram(rgc_rx.getMaximumLength());
-            logger.logInfo("run:open receiver connection");
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.logInfo("run:open receiver connection");
         } catch (IOException e) {
-            logger.logError("run:Could not open radiogram receiver connection");
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.logError("run:Could not open radiogram receiver connection");
             e.printStackTrace();
             return;
         }
@@ -170,8 +181,10 @@ public class OneHop extends L3 implements Runnable, GlobalConfiguration, Sender 
 
                 mesg = MessageFactory.create(b);
                 mesg.demarshall(b);
-                logger.logInfo("run:received message from " + dg.getAddress());
-                logger.logInfo("Message from lat=" + mesg.getSenderLat() + " lon=" 
+                if(DEBUG && DBUG_LVL >= LIGHT)
+                    logger.logInfo("run:received message from " + dg.getAddress());
+                if(DEBUG && DBUG_LVL >= LIGHT)
+                    logger.logInfo("Message from lat=" + mesg.getSenderLat() + " lon="
                         + mesg.getSenderLon() + " elev=" + mesg.getSenderElev() +
                         " dist="  + gps.getEuclidianDistFrom(mesg.getSenderLat(),
                         mesg.getSenderLon(), mesg.getSenderElev()));
@@ -180,21 +193,24 @@ public class OneHop extends L3 implements Runnable, GlobalConfiguration, Sender 
                 // logger.logInfo("Sender: " + AddressFiltering.longToAddress(mesg.getSender()));
                 if(DIST_ENFORCED && RANGE <
                         gps.getEuclidianDistFrom(mesg.getSenderLat(), mesg.getSenderLon(), mesg.getSenderElev())){
-                    logger.logInfo("Too far away, could not hear message");
+                    if(DEBUG && DBUG_LVL >= LIGHT)
+                        logger.logInfo("Too far away, could not hear message");
                     continue;
                 }
                 if(mesg.getMessageType() == MessageFactory.CLUSTER_MESSAGE){
-                    logger.logInfo("run:Cluster message: pass to ClusterManager");
+                    if(DEBUG && DBUG_LVL >= MEDIUM)
+                        logger.logInfo("run:Cluster message: pass to ClusterManager");
                     ClusterManager.getInstance().loadMessage((ClusterMessage) mesg, this);
                 }
                 if(mesg.getMessageType() == MessageFactory.PUB_SUB_MESSAGE){
-                    logger.logInfo("run:Pub Sub message: notify observers");
+                    if(DEBUG && DBUG_LVL >= MEDIUM)
+                        logger.logInfo("run:Pub Sub message: notify observers");
                     this.notifyObservers((Object) mesg);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                logger.logWarning("run:not receive data");
-
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logWarning("run: not receive data");
             }
         }
     }

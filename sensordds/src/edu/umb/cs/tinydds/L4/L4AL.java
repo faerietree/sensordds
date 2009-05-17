@@ -35,6 +35,7 @@ package edu.umb.cs.tinydds.L4;
 import com.sun.spot.util.IEEEAddress;
 import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.L3.L3Observer;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 
@@ -42,22 +43,24 @@ import edu.umb.cs.tinydds.utils.Observable;
  *
  * @author pruet
  */
-public class L4AL extends L4 implements L3Observer{
+public class L4AL extends L4 implements L3Observer, GlobalConfiguration{
     Logger logger;
     
     public L4AL() {
         super();
         logger = new Logger("L4AL");
-        logger.logInfo("initiate");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiate");
     }
     public int send(AbstractMessage msg) {
-        logger.logInfo("send:send mesg to " + IEEEAddress.toDottedHex(msg.getReceiver()));
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("send:send mesg to " + IEEEAddress.toDottedHex(msg.getReceiver()));
         return l3.send(msg);
     }
 
     public void update(Observable obj, Object arg) {
-        logger.logInfo("run:notify observer");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("run:notify observer");
         notifyObservers(arg);
     }
-
 }

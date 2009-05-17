@@ -39,6 +39,7 @@ import edu.umb.cs.tinydds.MessagePayloadBytes;
 import edu.umb.cs.tinydds.OERP.OERP;
 import edu.umb.cs.tinydds.TopicManager;
 import edu.umb.cs.tinydds.fuzzyAggregation.AggregatorImpl;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 import java.util.Enumeration;
@@ -55,7 +56,7 @@ import org.omg.dds.TopicDescription;
  *
  * @author pruet
  */
-public class PublisherImpl extends Observable implements Publisher {
+public class PublisherImpl extends Observable implements Publisher, GlobalConfiguration{
 
     Logger logger;
     Hashtable dataWriterTable;
@@ -66,13 +67,15 @@ public class PublisherImpl extends Observable implements Publisher {
     public PublisherImpl() {
         super();
         logger = new Logger("PublisherImpl");
-        logger.logInfo("initiate");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiate");
         dataWriterTable = new Hashtable();
         topicManager = TopicManager.getInstance();
     }
 
     public DataWriter create_datawriter(Topic topic, DataWriterListener a_listener) {
-        logger.logInfo("create_datawriter");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("create_datawriter");
         if (dataWriterTable.get(topic) == null) {
             DataWriter dataWriter = new DataWriterImpl(this, topic);
             dataWriter.set_listener(a_listener);
@@ -83,24 +86,28 @@ public class PublisherImpl extends Observable implements Publisher {
     }
 
     public int set_listener(PublisherListener a_listener) {
-        logger.logInfo("set_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("set_listener");
         publisherListener = a_listener;
         return DDS.SUCCESS;
     }
 
     public PublisherListener get_listener() {
-        logger.logInfo("get_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+           logger.logInfo("get_listener");
         return publisherListener;
     }
 
     public void publish(DataWriter dataWriter, MessagePayload payload) {
-        logger.logInfo("publish:topic " + dataWriter.get_topic());
+        if(DEBUG && DBUG_LVL >= LIGHT)
+            logger.logInfo("publish:topic " + dataWriter.get_topic());
         PubSubMessage msg = new PubSubMessage(payload);
         msg.setSubject(PubSubMessage.SUBJECT_DATA);
         msg.setTopic(dataWriter.get_topic());
         msg.setOriginator(L3.getAddress());
         if (oerp == null) {
-            logger.logError("publish:OERP is not connected");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logError("publish:OERP is not connected");
             return;
         }
         
@@ -126,15 +133,5 @@ public class PublisherImpl extends Observable implements Publisher {
     public void setOERP(OERP oerp) {
         PublisherImpl.oerp = oerp;
     }
-
-//    public void update(Observable obj, Object arg) {
-//       
-//        logger.logInfo("update");
-//        if(obj.equals(oerp) && (arg instanceof Message) && (((Message)arg).getSubject() == Message.SUBJECT_SUBSCRIBE)) {
-//            Message message = (Message)arg;
-//            
-//        }
-//    }
-    
     
 }

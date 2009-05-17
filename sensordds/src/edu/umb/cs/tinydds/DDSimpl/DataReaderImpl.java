@@ -33,6 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package edu.umb.cs.tinydds.DDSimpl;
 
 import edu.umb.cs.tinydds.DDS;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
@@ -45,41 +46,48 @@ import org.omg.dds.TopicDescription;
  *
  * @author pruet
  */
-public class DataReaderImpl extends Observable implements DataReader, Observer {
+public class DataReaderImpl extends Observable 
+                            implements DataReader, Observer, GlobalConfiguration {
     Logger logger;
     Subscriber subscriber;
     DataReaderListener dataReaderListener;
     TopicDescription topic;
     
     public DataReaderImpl(Subscriber subscriber, TopicDescription topic) {
-        logger = new Logger("DataReaderImpl");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger = new Logger("DataReaderImpl");
         this.subscriber = subscriber;
         this.topic = topic;
         
-        logger.logInfo("initiate:topic=" + topic);
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiate:topic=" + topic);
     }
     public int set_listener(DataReaderListener a_listener) {
-        logger.logInfo("set_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("set_listener");
         dataReaderListener = a_listener;
         return DDS.SUCCESS;
     }
 
     public DataReaderListener get_listener() {
-        logger.logInfo("get_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("get_listener");
         return dataReaderListener;
     }
 
     public Subscriber get_subscriber() {
-        logger.logInfo("get_subscriber");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("get_subscriber");
         return subscriber;
     }
 
     public void update(Observable obj, Object arg) {
-        logger.logInfo("update");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("update");
         if(obj.equals(subscriber)) {
-            logger.logInfo("push up");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("update: push up");
             notifyObservers(arg);
         }
     }
-
 }

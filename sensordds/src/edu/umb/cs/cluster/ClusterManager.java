@@ -78,13 +78,13 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
         if(isBaseStation){
             logger.logInfo("run:Base Station");
             creatBaseStationTasks();
-            clusterTimer.scheduleAtFixedRate(task1, 2, PING_INTERVAL * ONE_SECOND);
+            clusterTimer.scheduleAtFixedRate(task1, PING_DELAY, PING_INTERVAL * ONE_SECOND);
             logger.logInfo("run:task1: collect network info every "
-                    + PING_INTERVAL + "s: start in 2s.");
+                    + PING_INTERVAL + "s: start in " + PING_DELAY + "s.");
             if(DEBUG && DBUG_LVL >= LIGHT){
-                clusterTimer.scheduleAtFixedRate(task2, 4, PING_INTERVAL * ONE_SECOND);
+                clusterTimer.scheduleAtFixedRate(task2, DISP_DELAY, PING_INTERVAL * ONE_SECOND);
                 logger.logInfo("run:task2: show nodes in network every "
-                        + PING_INTERVAL + "s: start in 4s.");
+                        + PING_INTERVAL + "s: start in " + DISP_DELAY + "s.");
             }
         }
     }
@@ -99,8 +99,9 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
     public ClusterStrategy setStrategy(ClusterStrategy newStrategy){
         ClusterStrategy oldStrategy = this.strategy;
         this.strategy = newStrategy;
-        logger.logInfo("Replacing old strategy: \"" + oldStrategy.describe() +
-                "\" with :\"" + newStrategy.describe());
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("Replacing old strategy: \"" + oldStrategy.describe()
+                    + "\" with :\"" + newStrategy.describe());
         return oldStrategy;
     }
 
@@ -124,9 +125,10 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
         if(strategy.acceptMember(gps, lat, lon, elev, clusterMembers.size()))
             if (!this.clusterMembers.contains(ieeeAddress)){
                 this.clusterMembers.addElement(ieeeAddress);
-                logger.logInfo("Adding CM " + ieeeAddress + "to CH (this) " +
-                        IEEEAddress.toDottedHex(Spot.getInstance().
-                        getRadioPolicyManager().getIEEEAddress()));
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("Adding CM " + ieeeAddress + "to CH (this) "
+                            + IEEEAddress.toDottedHex(Spot.getInstance().
+                            getRadioPolicyManager().getIEEEAddress()));
             }
     }
 
@@ -174,7 +176,8 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
     public void loadMessage(ClusterMessage msg, Sender mailer){
         byte code = msg.getMsgCode();
         if (code == ClusterMessage.NEED_INFO){
-            logger.logInfo("loadMessage:received message: NEED_INFO");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("loadMessage:received message: NEED_INFO");
             if(!isBaseStation){
                 ClusterMessage response = new ClusterMessage();
                 response.setMsgCode(ClusterMessage.MY_INFO);
@@ -184,7 +187,8 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
             }
         }
         else if (code == ClusterMessage.MY_INFO){
-            logger.logInfo("loadMessage:received message: MY_INFO");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("loadMessage:received message: MY_INFO");
             if(isBaseStation){
                 Long newID = new Long(msg.getOriginator());
                 if(!networkMembers.contains(newID)) { // New node in the network
@@ -200,11 +204,13 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
             }
         }
         else if (code == ClusterMessage.NEED_CH){
-            logger.logInfo("loadMessage:received message: NEED_CH");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("loadMessage:received message: NEED_CH");
 
         }
         else {
-            logger.logInfo("loadMessage:received message: SOMETHING ELSE");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("loadMessage:received message: SOMETHING ELSE");
         }
     }
 
@@ -218,7 +224,8 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
         logger.logInfo("creatBaseStationTasks");
         task1 = new TimerTask(){
             public void run() {
-                logger.logInfo("task1:Broadcast NEED_INFO");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("task1:Broadcast NEED_INFO");
                 ClusterMessage msg = new ClusterMessage();
                 msg.setMsgCode(ClusterMessage.NEED_INFO);
                 msg.setReceiver(L3.BROADCAST_ADDRESS);
@@ -233,7 +240,8 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
          */
         task2 = new TimerTask(){
             public void run() {
-                logger.logInfo("task2:Show Network nodes");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("task2:Show Network nodes");
                 Enumeration members = networkMembers.keys();
                 String s = "\nActive Network Members:\n";
                 while(members.hasMoreElements()){
@@ -258,7 +266,8 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
          */
         task3 = new TimerTask(){
             public void run() {
-                logger.logInfo("task2: looking for CH");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("task2: looking for CH");
             }
         };
     }

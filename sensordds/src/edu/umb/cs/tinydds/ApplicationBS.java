@@ -97,11 +97,13 @@ public class ApplicationBS implements Observer, GlobalConfiguration {
         if(CLUSTERING)
             ClusterManager.getInstance().run(); // Start all clustering tasks
         
-        logger.logInfo("initiate BASE STATION ID: " +
-                IEEEAddress.toDottedHex(Spot.getInstance().
-                getRadioPolicyManager().getIEEEAddress()));
-        logger.logInfo("lat = " + gps.getLatitude() + "; lon = " +
-                       gps.getLongitude() + "; elev = " + gps.getElevation());
+        if(DEBUG && DBUG_LVL >= LIGHT){
+            logger.logInfo("initiate BASE STATION ID: " +
+                    IEEEAddress.toDottedHex(Spot.getInstance().
+                    getRadioPolicyManager().getIEEEAddress()));
+            logger.logInfo("lat = " + gps.getLatitude() + "; lon = " +
+                           gps.getLongitude() + "; elev = " + gps.getElevation());
+        }
     }
 
     public void update(Observable obj, Object arg) {
@@ -111,7 +113,8 @@ public class ApplicationBS implements Observer, GlobalConfiguration {
             if (status.getChanged() == 0) {
                 // Create subscriber
                 // FIXME: Some flag should be put here, we need to publish only once
-                logger.logInfo("subscribe");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("subscribe");
                 
                 subscriber = domainParticipant.create_subscriber(null);
                 Topic topic = domainParticipant.create_topic("LightSensor", "light");
@@ -132,7 +135,9 @@ public class ApplicationBS implements Observer, GlobalConfiguration {
             PubSubMessage msg = (PubSubMessage) arg;
             MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
             int light = Utils.readBigEndInt(payload.get(), 0);
-            logger.logInfo("We got data from " + IEEEAddress.toDottedHex(msg.getOriginator()) + " value = " + light);
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("We got data from " + IEEEAddress.toDottedHex(msg.getOriginator())
+                        + " value = " + light);
             leds.setRGB(6, 0, light, 0);
             leds.setOn(6);
         }

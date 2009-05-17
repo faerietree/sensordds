@@ -22,7 +22,7 @@ public interface GlobalConfiguration {
     public static final int MEDIUM = 2;
     public static final int FULL = 3;
 
-    public static final int DBUG_LVL = FULL;
+    public static final int DBUG_LVL = LIGHT;
 
     // No changes below this line
     //------------------------------------------------------------------------
@@ -38,6 +38,10 @@ public interface GlobalConfiguration {
                                  new Rectangle2D(-70, 43, -69, 42);
 
     public final static int PING_INTERVAL = 15;
+    public final static int EXPIRE_INTERVAL = 60;
+    public final static int PING_DELAY = 1;
+    public final static int DISP_DELAY = PING_DELAY + 4;
+    public final static int EXP_DELAY = DISP_DELAY + 2;
     public final static int ONE_SECOND = 1000;
     public final static long NOT_ASSIGNED = -1; // For node addresses
 

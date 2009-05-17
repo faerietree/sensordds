@@ -38,7 +38,7 @@ import edu.umb.cs.tinydds.utils.Observable;
  *
  * @author pruet
  */
-public abstract class L3 extends Observable {
+public abstract class L3 extends Observable implements Sender{
     public static final long NO_ADDRESS = Long.MIN_VALUE;
     public static final long BROADCAST_ADDRESS = Long.MAX_VALUE;
     public static long myAddress = 0;

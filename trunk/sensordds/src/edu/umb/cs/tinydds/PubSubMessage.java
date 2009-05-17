@@ -31,11 +31,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 package edu.umb.cs.tinydds;
 
-import com.sun.spot.peripheral.Spot;
 import edu.umb.cs.tinydds.DDSimpl.ContentFilteredTopicImpl;
 import edu.umb.cs.tinydds.DDSimpl.TopicDescriptionImpl;
 import edu.umb.cs.tinydds.DDSimpl.TopicImpl;
-import edu.umb.cs.tinydds.L3.L3;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -48,6 +46,7 @@ import org.omg.dds.TopicDescription;
 /**
  *
  * @author pruet
+ * @author francesco    Marshalling and Demarshalling GPS positions as well
  */
 
 // This is JavaBean style class, it should be self-contain.
@@ -134,6 +133,10 @@ public class PubSubMessage extends AbstractMessage {
             dout.writeLong(getSender());
             dout.writeLong(getReceiver());
             dout.writeLong(getOriginator());
+            // Lat/Lon/Elev payload
+            dout.writeDouble(getSenderLat());
+            dout.writeDouble(getSenderLon());
+            dout.writeDouble(getSenderElev());
             
             dout.writeByte(topicType);   //which type of topic this is
             
@@ -159,7 +162,11 @@ public class PubSubMessage extends AbstractMessage {
             setSender(din.readLong());
             setReceiver(din.readLong());
             setOriginator(din.readLong());
-            
+            // Lat/Lon/Elev payload
+            setSenderLat(din.readDouble());
+            setSenderLon(din.readDouble());
+            setSenderElev(din.readDouble());
+
             TopicDescriptionImpl topic = null;
             topicType = din.readByte();     //set topic type
             

@@ -33,6 +33,7 @@ package edu.umb.cs.tinydds.L4;
 
 import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.L3.L3;
+import edu.umb.cs.tinydds.Sender;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
 
@@ -40,7 +41,7 @@ import edu.umb.cs.tinydds.utils.Observer;
  *
  * @author pruet
  */
-public abstract class L4 extends Observable implements Observer {
+public abstract class L4 extends Observable implements Observer, Sender {
 
     protected L3 l3 = null;
 
@@ -49,5 +50,5 @@ public abstract class L4 extends Observable implements Observer {
         l3.addObserver(this);
     }
 
-    public abstract int send(AbstractMessage msg);
+   public abstract int send(AbstractMessage msg);
 }

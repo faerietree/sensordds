@@ -77,7 +77,7 @@ public class DDS_BS extends MIDlet {
         l4.setL3(l3);
         tinygiop = new TinyGIOPimpl();
         tinygiop.setL4(l4);
-        oerp = new SpanningTree();
+        oerp = new SpanningTree(true);  // This is a Base Station
         oerp.setTinyGIOP(tinygiop);
         
         

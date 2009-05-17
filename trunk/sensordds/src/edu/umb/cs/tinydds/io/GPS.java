@@ -17,4 +17,5 @@ public interface GPS {
 
     double getLongitude();
 
+    public double getEuclidianDistFrom(double lat, double lon, double elev);
 }

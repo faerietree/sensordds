@@ -125,18 +125,21 @@ public class Application implements Observer, GlobalConfiguration{
         if(CLUSTERING)
             ClusterManager.getInstance().run(); // Start all clustering tasks
         
-        logger.logInfo("initiate: NODE ID: " +
-                IEEEAddress.toDottedHex(Spot.getInstance().
-                getRadioPolicyManager().getIEEEAddress()));
-        logger.logInfo("lat = " + gps.getLatitude() + "; lon = " +
-                       gps.getLongitude() + "; elev = " + gps.getElevation());
+        if(DEBUG && DBUG_LVL >= LIGHT) {
+            logger.logInfo("initiate: NODE ID: " +
+                    IEEEAddress.toDottedHex(Spot.getInstance().
+                    getRadioPolicyManager().getIEEEAddress()));
+            logger.logInfo("lat = " + gps.getLatitude() + "; lon = " +
+                           gps.getLongitude() + "; elev = " + gps.getElevation());
+        }
     }
 
     
     private void createTimerTasks(){
         lightTimerTask = new TimerTask(){
             public void run() {
-                logger.logInfo("publish data");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("publish data");
                 byte data[] = new byte[4];
                 try {
                     Utils.writeBigEndInt(data, 0, lightSensor.getValue());
@@ -151,7 +154,8 @@ public class Application implements Observer, GlobalConfiguration{
         
         tempTimerTask = new TimerTask(){
             public void run() {
-                logger.logInfo("publish data");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("publish data");
                 byte data[] = new byte[4];
                 try {
                     Utils.writeBigEndInt(data, 0, tempSensor.getValue());
@@ -165,7 +169,8 @@ public class Application implements Observer, GlobalConfiguration{
     }
     
     public void update(Observable obj, Object arg) {
-        logger.logInfo("update");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("update");
         if (obj.equals(switchs)) {
             SwitchStatus status = (SwitchStatus) arg;
             
@@ -174,12 +179,14 @@ public class Application implements Observer, GlobalConfiguration{
                 isPublishing = !isPublishing;
                 
                 if(isPublishing){ // turn on publishing
-                    logger.logInfo("turned on publishing");
+                    if(DEBUG && DBUG_LVL >= LIGHT)
+                        logger.logInfo("turned on publishing");
                     measurementTimer.scheduleAtFixedRate(lightTimerTask, 0, LIGHT_DELAY);
                     measurementTimer.scheduleAtFixedRate(tempTimerTask, 0, TEMP_DELAY);
                 }
                 else {
-                    logger.logInfo("turned off publishing");
+                    if(DEBUG && DBUG_LVL >= LIGHT)
+                        logger.logInfo("turned off publishing");
                  
                     //this is probably a threading issue
                     lightTimerTask.cancel();
@@ -191,7 +198,8 @@ public class Application implements Observer, GlobalConfiguration{
             else if (status.getChanged() == 0) {
                 // Create subscriber
                 // FIXME: Some flag should be put here, we need to publish only once
-                logger.logInfo("subscribe");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("subscribe");
                 
                 subscriber = domainParticipant.create_subscriber(null);
                 Topic topic = domainParticipant.create_topic("LightSensor", "light");
@@ -212,7 +220,9 @@ public class Application implements Observer, GlobalConfiguration{
             PubSubMessage msg = (PubSubMessage) arg;
             MessagePayloadBytes payload = (MessagePayloadBytes) msg.getPayload();
             int light = Utils.readBigEndInt(payload.get(), 0);
-            logger.logInfo("We got data from " + IEEEAddress.toDottedHex(msg.getOriginator()) + " value = " + light);
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("We got data from " + IEEEAddress.toDottedHex(msg.getOriginator())
+                        + " value = " + light);
             leds.setRGB(6, 0, light, 0);
             leds.setOn(6);
         }

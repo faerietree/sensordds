@@ -43,6 +43,7 @@ import edu.umb.cs.tinydds.OERP.SpanningTree;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOP;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOPimpl;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import javax.microedition.midlet.MIDlet;
 import javax.microedition.midlet.MIDletStateChangeException;
@@ -52,7 +53,7 @@ import org.omg.dds.DomainParticipant;
  *
  * @author pruet
  */
-public class DDS_BS extends MIDlet {
+public class DDS_BS extends MIDlet implements GlobalConfiguration {
 
     public static final int SUCCESS = 0;
     public static final int FAIL = 1;
@@ -69,7 +70,8 @@ public class DDS_BS extends MIDlet {
         leds = new LED();
         logger = new Logger("DDS_BS");
         logger.setLogLevel(Logger.INFO);
-        logger.logInfo("initiated");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiated");
         
         // TinyDDS Stack
         l3 = new OneHop();
@@ -90,6 +92,8 @@ public class DDS_BS extends MIDlet {
         //Start application
         new ApplicationBS();
         //Show LED status
+        if(DEBUG && DBUG_LVL >= FULL)
+            logger.logInfo("LED color is BLUE");
         leds.setColor(7, LEDColor.BLUE);
         leds.setOn(7);
     }

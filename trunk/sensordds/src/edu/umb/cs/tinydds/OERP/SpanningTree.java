@@ -43,6 +43,7 @@ import edu.umb.cs.tinydds.MessagePayloadBytes;
 import edu.umb.cs.tinydds.TopicManager;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.tinygiop.TinyGIOPObserver;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 import java.util.Vector;
@@ -53,7 +54,8 @@ import org.omg.dds.TopicDescription;
  * @author pruet
  * @author francesco    Added ClusterManager member
  */
-public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
+public class SpanningTree extends OERP 
+                          implements TinyGIOPObserver, Runnable, GlobalConfiguration {
 
     Logger logger;
     //Hashtable topicWeight;
@@ -76,7 +78,8 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 //        leds.setOn(2);
 
         logger = new Logger("SpanningTree");
-        logger.logInfo("initiate");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiate");
 
         //topicWeight = new Hashtable();
         subscribedTopic = new Vector();
@@ -99,32 +102,31 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
     public void update(Observable obj, Object arg) {
         PubSubMessage msg = (PubSubMessage) arg;
         
-        logger.logInfo("update:receive message subject=" + msg.getSubject() +
+        if(DEBUG && DBUG_LVL >= LIGHT)
+            logger.logInfo("update:receive message subject=" + msg.getSubject() +
                        " topic=" + msg.getTopic() + " orig=" +
                        AddressFiltering.longToAddress(msg.getOriginator()) +
                        " from=" + AddressFiltering.longToAddress(msg.getSender()));
         
         if (msg.getSubject() == PubSubMessage.SUBJECT_SUBSCRIBE) {  //publisher gets here
             
-            logger.logInfo("update:subscribe message");
-          
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.logInfo("update:subscribe message");
             TopicDescription topic = msg.getTopic();
-            
             topicManager.addAddressForTopic(topic, msg.getSender());
-            
-            //subscriptionAddresses.put(topic, new Long(msg.getSender()));
-            //notifyObservers(arg);
         }
         if (msg.getSubject() == PubSubMessage.SUBJECT_DATA) {  
             
             if (subscribedTopic.contains(msg.getTopic())) {   //subscriber gets here
+                if(DEBUG && DBUG_LVL >= MEDIUM)
                 logger.logInfo("update:we're intrested in this topic, push up");
                 notifyObservers(arg);
             }
             
             Vector subscriptionAddresses = topicManager.getAddressesForTopic(msg.getTopic());
             if (subscriptionAddresses != null) { 
-                logger.logInfo("update:forward data message");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("update:forward data message");
                 
                 Long address = (Long)subscriptionAddresses.firstElement();
                 msg.setReceiver(address.longValue());
@@ -138,10 +140,12 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 
     public int send(AbstractMessage msg) {
         if(msg.getMessageType() == MessageFactory.CLUSTER_MESSAGE){
-            logger.logInfo("send:ClusterMSG");
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.logInfo("send:ClusterMSG");
             return tinygiop.send(msg);
         } else {
-            logger.logInfo("send:PubSubMSG");
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.logInfo("send:PubSubMSG");
             if (((PubSubMessage) msg).getSubject() == PubSubMessage.SUBJECT_SUBSCRIBE) {
                 msg.setReceiver(L3.BROADCAST_ADDRESS);
                 return tinygiop.send(msg);
@@ -156,7 +160,8 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
                     msg.setReceiver(receiverAddress.longValue());
                     return tinygiop.send(msg);
                 }
-                logger.logInfo("send:no subscriber, drop");
+                if(DEBUG && DBUG_LVL >= MEDIUM)
+                    logger.logInfo("send:no subscriber, drop");
             }
         }
         return DDS.FAIL;
@@ -171,7 +176,8 @@ public class SpanningTree extends OERP implements TinyGIOPObserver, Runnable {
 
     public int subscribe(TopicDescription topic) {
         //TODO this limit the network radius to only 255 hops, but that should be large enough
-        logger.logInfo("subscribe");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("subscribe");
         subscribedTopic.addElement(topic);
         
         byte[] weight = new byte[1];

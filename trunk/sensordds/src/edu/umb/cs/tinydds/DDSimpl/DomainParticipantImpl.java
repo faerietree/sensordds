@@ -30,6 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.umb.cs.tinydds.DDSimpl;
 
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import java.util.Hashtable;
 import org.omg.dds.ContentFilteredTopic;
@@ -44,7 +45,7 @@ import org.omg.dds.Topic;
  *
  * @author pruet
  */
-public class DomainParticipantImpl implements DomainParticipant {
+public class DomainParticipantImpl implements DomainParticipant, GlobalConfiguration {
 
     protected static Publisher publisher = null;
     protected static Subscriber subscriber = null;
@@ -57,7 +58,8 @@ public class DomainParticipantImpl implements DomainParticipant {
     }
 
     public Publisher create_publisher(PublisherListener a_listener) {
-        logger.logInfo("create_publisher");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("create_publisher");
         if (publisher == null) {
             publisher = new PublisherImpl();
         }
@@ -66,7 +68,8 @@ public class DomainParticipantImpl implements DomainParticipant {
     }
 
     public Subscriber create_subscriber(SubscriberListener a_listener) {
-        logger.logInfo("create_subscriber");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("create_subscriber");
         if (subscriber == null) {
             subscriber = new SubscriberImpl();
         }
@@ -75,7 +78,8 @@ public class DomainParticipantImpl implements DomainParticipant {
     }
 
     public ContentFilteredTopic create_contentfilteredtopic(String name, Topic related_topic, String filter_expression, String[] expression_parameters) {
-        logger.logInfo("create_contentfilteredtopic");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("create_contentfilteredtopic");
         if(topics.contains(name)){
             //TODO this could be an ClassCastException if there is a Topic that exists with this name
             return (ContentFilteredTopic)topics.get(name);
@@ -90,7 +94,8 @@ public class DomainParticipantImpl implements DomainParticipant {
 
     
     public Topic create_topic(String topic_name, String type_name) {
-        logger.logInfo("create_topic");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("create_topic");
         
         if(topics.contains(topic_name)){
             return (Topic)topics.get(topic_name);
@@ -100,6 +105,4 @@ public class DomainParticipantImpl implements DomainParticipant {
         
         return topic;
     }
-    
-    
 }

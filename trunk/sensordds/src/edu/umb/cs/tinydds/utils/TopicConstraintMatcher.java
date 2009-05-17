@@ -15,7 +15,7 @@ import java.util.Vector;
  *
  * @author matt
  */
-public class TopicConstraintMatcher {
+public class TopicConstraintMatcher implements GlobalConfiguration {
 
     private Logger logger;
     private Aggregator aggregator;
@@ -27,7 +27,8 @@ public class TopicConstraintMatcher {
     
     //change this value to some object like SensorConstraints
     public boolean match(SensorContentFilteredTopic topic, int value, long timestamp, Geometry geom){
-        logger.logInfo("match");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("match");
         
         Hashtable selectors = topic.getSelectors();        
         Hashtable vars = new Hashtable();
@@ -59,7 +60,8 @@ public class TopicConstraintMatcher {
         boolean result = topic.eval(vars);
         
         if(result){
-            logger.logInfo("got match for "+topic.get_name());
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("got match for "+topic.get_name());
         }
         
         return result;

@@ -7,6 +7,7 @@ package edu.umb.cs.tinydds;
 
 import edu.umb.cs.tinydds.DDSimpl.ContentFilteredTopicImpl;
 import edu.umb.cs.tinydds.DDSimpl.SensorContentFilteredTopic;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 
 import edu.umb.cs.tinydds.utils.TopicConstraintMatcher;
@@ -20,7 +21,7 @@ import org.omg.dds.TopicDescription;
  *
  * @author matt
  */
-public class TopicManager {
+public class TopicManager implements GlobalConfiguration {
     
     protected static TopicManager topicManager;
     
@@ -52,7 +53,8 @@ public class TopicManager {
      * @return
      */
     public Vector getAddressesForTopic(TopicDescription topicDescription){
-        logger.logInfo("getAddressesForTopic");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("getAddressesForTopic");
         
         Vector subscriberAddresses = (Vector)topics.get(topicDescription);
         
@@ -66,7 +68,8 @@ public class TopicManager {
      * @return
      */
     public Vector findFilteredTopics(TopicDescription topic, int value){
-        logger.logInfo("findFilteredTopics");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("findFilteredTopics");
         
         Vector matchedFilteredTopics = new Vector();
         
@@ -89,7 +92,8 @@ public class TopicManager {
      * @param subscriberAddress
      */
     public void addAddressForTopic(TopicDescription topicDescription, long subscriberAddress){
-        logger.logInfo("addAddressForTopic");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("addAddressForTopic");
         
         //get the list of subscriber addresses associated with this topic
         Vector subscriberAddresses = getAddressesForTopic(topicDescription);
@@ -110,10 +114,12 @@ public class TopicManager {
         //check to see if this address is already subscribing to this topic
         if(!subscriberAddresses.contains(subscriberAddressLong)) {
             subscriberAddresses.addElement(subscriberAddressLong);
-            logger.logInfo("added address for topic: "+topicDescription);
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("added address for topic: " + topicDescription);
         }
         else {
-            logger.logInfo("dropped subscriber address");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("dropped subscriber address");
         }
     }
     
@@ -123,7 +129,8 @@ public class TopicManager {
      * @return 
      */
     public Enumeration getAllTopics(){
-        logger.logInfo("getAllTopics");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("getAllTopics");
         return topics.keys();
     }
     
@@ -134,7 +141,8 @@ public class TopicManager {
      * @return
      */
     public Enumeration getContentFilteredTopics(TopicDescription topic){
-        logger.logInfo("getcontentFilteredTopics");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("getcontentFilteredTopics");
         
         Vector foo = new Vector();
         

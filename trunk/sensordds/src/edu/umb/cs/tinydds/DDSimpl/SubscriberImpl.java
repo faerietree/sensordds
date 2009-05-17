@@ -34,6 +34,7 @@ package edu.umb.cs.tinydds.DDSimpl;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.PubSubMessage;
 import edu.umb.cs.tinydds.OERP.OERP;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
@@ -49,7 +50,8 @@ import org.omg.dds.TopicDescription;
  *
  * @author pruet
  */
-public class SubscriberImpl extends Observable implements Subscriber, Observer {
+public class SubscriberImpl extends Observable 
+                            implements Subscriber, Observer, GlobalConfiguration {
 
     protected static OERP oerp;
     Logger logger;
@@ -59,16 +61,19 @@ public class SubscriberImpl extends Observable implements Subscriber, Observer {
     public SubscriberImpl() {
         super();
         logger = new Logger("SubscriberImpl");
-        logger.logInfo("initiate");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("initiate");
         dataReaderTable = new Hashtable();
     }
 
     public DataReader create_datareader(TopicDescription topic, DataReaderListener a_listener) {
-        logger.logInfo("create_datareader");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("create_datareader");
         if(dataReaderTable.get(topic) == null) {
             DataReader dataReader = new DataReaderImpl(this, topic);
             dataReader.set_listener(a_listener);
-            logger.logInfo("create_datareader:set observer");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("create_datareader:set observer");
             this.addObserver((DataReaderImpl) dataReader);
             dataReaderTable.put(topic, dataReader);
             oerp.subscribe(topic);
@@ -80,13 +85,15 @@ public class SubscriberImpl extends Observable implements Subscriber, Observer {
     }
 
     public int set_listener(SubscriberListener a_listener) {
-        logger.logInfo("set_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("set_listener");
         publisherListener = a_listener;
         return DDS.SUCCESS;
     }
 
     public SubscriberListener get_listener() {
-        logger.logInfo("get_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("get_listener");
         return publisherListener;
     }
 
@@ -95,17 +102,20 @@ public class SubscriberImpl extends Observable implements Subscriber, Observer {
     }
 
     public void update(Observable obj, Object arg) {
-        logger.logInfo("update");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("update");
         
         //only care about getting subscription data ... maybe
         if(obj.equals(oerp) && (arg instanceof PubSubMessage) && (((PubSubMessage)arg).getSubject() == PubSubMessage.SUBJECT_DATA) ) {
-            logger.logInfo("push up");
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("push up");
             notifyObservers(arg);
         }
     }
 
     public void setOERP(OERP oerp) {
-        logger.logInfo("setOERP");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("setOERP");
         SubscriberImpl.oerp = oerp;
     }
 }

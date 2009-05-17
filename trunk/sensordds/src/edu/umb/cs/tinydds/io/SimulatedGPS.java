@@ -64,15 +64,18 @@ public class SimulatedGPS implements GPS, GlobalConfiguration {
         generator = new Random();
         generator.setSeed(seed);
         if(sandbox instanceof Rectangle2D) {
-            logger.log(Logger.INFO, "initiate: Sandbox is a Rectangle");
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.log(Logger.INFO, "initiate: Sandbox is a Rectangle");
             this.rect2dSandbox = (Rectangle2D) sandbox; // No checking that the rectagle is legit.
         }
         if(sandbox instanceof Circle){
-            logger.log(Logger.INFO, "initiate: Sandbox is a Circle");
+            if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.log(Logger.INFO, "initiate: Sandbox is a Circle");
             this.circle2dSandbox = (Circle) sandbox; // No checking that the circle is legit.
         }
         if(sandbox instanceof Polygon){
-            logger.log(Logger.INFO, "initiate: Sandbox is a Polygon");
+           if(DEBUG && DBUG_LVL >= MEDIUM)
+                logger.log(Logger.INFO, "initiate: Sandbox is a Polygon");
             this.poly2dSandbox = (Polygon) sandbox; // No checking that the polygon is legit.
         }
         setRandomPosition();

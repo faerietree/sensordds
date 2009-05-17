@@ -34,6 +34,7 @@ package edu.umb.cs.tinydds.DDSimpl;
 
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.MessagePayload;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.utils.Observable;
 import org.omg.dds.DataWriter;
@@ -45,7 +46,7 @@ import org.omg.dds.Topic;
  *
  * @author pruet
  */
-public class DataWriterImpl extends Observable implements DataWriter{
+public class DataWriterImpl extends Observable implements DataWriter, GlobalConfiguration{
     Logger logger;
     Publisher publisher;
     DataWriterListener dataWriterListener;
@@ -55,32 +56,37 @@ public class DataWriterImpl extends Observable implements DataWriter{
         logger = new Logger("DataWriterImpl");
         this.publisher = publisher;
         this.topic = topic;
-        logger.logInfo("initiate:topic=" + topic);
+        if(DEBUG && DBUG_LVL >= LIGHT)
+            logger.logInfo("initiate:topic=" + topic);
     }
     public DataWriterListener get_listener() {
-        logger.logInfo("get_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("get_listener");
         return dataWriterListener;
     }
 
     public Topic get_topic() {
-        logger.logInfo("get_topic");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("get_topic");
         return topic;
     }
 
     public Publisher get_publisher() {
-        logger.logInfo("get_topic");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("get_topic");
         return publisher;
     }
 
     public void write(MessagePayload msg) {
-        logger.logInfo("write");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("write");
         publisher.publish(this, msg);
     }
 
     public int set_listener(DataWriterListener a_listener) {
-        logger.logInfo("set_listener");
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("set_listener");
         dataWriterListener = a_listener;
         return DDS.SUCCESS;
     }
-
 }

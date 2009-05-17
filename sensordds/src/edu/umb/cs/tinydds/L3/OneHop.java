@@ -34,9 +34,15 @@ import com.sun.spot.io.j2me.radiogram.Radiogram;
 import com.sun.spot.io.j2me.radiogram.RadiogramConnection;
 import com.sun.spot.peripheral.Spot;
 import com.sun.spot.util.IEEEAddress;
+import edu.umb.cs.cluster.ClusterManager;
 import edu.umb.cs.tinydds.AbstractMessage;
+import edu.umb.cs.cluster.ClusterMessage;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.MessageFactory;
+import edu.umb.cs.tinydds.Sender;
+import edu.umb.cs.tinydds.io.GPS;
+import edu.umb.cs.tinydds.io.SimulatedGPS;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import java.io.IOException;
 import javax.microedition.io.Connector;
@@ -44,13 +50,15 @@ import javax.microedition.io.Connector;
 /**
  *
  * @author pruet
+ * @author francesco    Messages are augmented with GPS position before sending
  */
-public class OneHop extends L3 implements Runnable {
+public class OneHop extends L3 implements Runnable, GlobalConfiguration, Sender {
 
     // TODO: move to some configuration file
     AddressFiltering addressFiltering;
     Logger logger;
     boolean flag;
+    private GPS gps;
 
     public OneHop() {
         //this just doesn't seem to work..
@@ -64,6 +72,7 @@ public class OneHop extends L3 implements Runnable {
         //addressFiltering = new AddressFiltering(L3.getAddress());
         logger.logInfo("initiated:start receiver thread");
         flag = false;
+        gps = SimulatedGPS.getInstance(); // Get GPS instance
         new Thread(this).start();
     }
 
@@ -72,19 +81,25 @@ public class OneHop extends L3 implements Runnable {
         RadiogramConnection rgc_tx = null;
         Radiogram dg = null;
         String url = null;
+
         //TODO: Test this flag, but theoretically, it should work well
         if (flag) {
             return DDS.FAIL;
         }
         flag = true;
+
+        // Augment message with GPS position
+        msg.setSenderLat(gps.getLatitude());
+        msg.setSenderLon(gps.getLongitude());
+        msg.setSenderElev(gps.getElevation());
+
         if (msg.getReceiver() != L3.BROADCAST_ADDRESS) {
             url = "radiogram://" + AddressFiltering.longToAddress(msg.getReceiver()) + ":123";
         } else {
             url = "radiogram://broadcast:123";
         }
         logger.logInfo("send:to:" + url);
-        //logger.logInfo("send:subject:" + msg.getSubject());
-        //logger.logInfo("send:topic:" + msg.getTopic());
+
         try {
             rgc_tx = (RadiogramConnection) Connector.open(url);
             dg = (Radiogram) rgc_tx.newDatagram(rgc_tx.getMaximumLength());
@@ -99,9 +114,12 @@ public class OneHop extends L3 implements Runnable {
                 dg.reset();
                 int size = msg.marshall().length;
                 if (size > rgc_tx.getMaximumLength()) {
-                    logger.logError("send:message to large max=" + rgc_tx.getMaximumLength() + " msg size= " + size);
+                    logger.logError("send:message to large max=" +
+                                    rgc_tx.getMaximumLength() + " msg size= " + size);
                     return DDS.FAIL;
                 }
+                if(msg.getMessageType() == MessageFactory.CLUSTER_MESSAGE)
+                    logger.logInfo("Message code is: " + ((ClusterMessage)msg).getMsgCode());
                 dg.write(msg.marshall());
                 rgc_tx.send(dg);
                 rgc_tx.close();
@@ -144,32 +162,35 @@ public class OneHop extends L3 implements Runnable {
         while (true) {
             try {
                 byte[] b = new byte[rgc_rx.getMaximumLength()];
+                AbstractMessage mesg;
                 
                 dg.reset();
                 rgc_rx.receive(dg);
                 b = dg.getData();
-                
-                AbstractMessage mesg = MessageFactory.create(b);
+
+                mesg = MessageFactory.create(b);
                 mesg.demarshall(b);
-                
-                logger.logInfo("run:receive a connection from " + dg.getAddress());
-                //FIXME: This is a dirty hack, but I can't see how to fix better than this =_==
-                //Gotta find a way to fix the address of base station...
-//                if (mesg.getSubject() == Message.SUBJECT_SUBSCRIBE) {
-//                    MessagePayloadBytes payload = (MessagePayloadBytes) mesg.getPayload();
-//                    byte weight = payload.get()[0];
-//                    logger.logInfo("run:check if it's subscription " + weight);
-//                    if (weight == 1) { // This guy must be the base station
-//                        AddressFiltering.setBaseStation(dg.getAddress());
-//                    }
-//                }
-//                if (!addressFiltering.isMyNeighbor(dg.getAddress())) {
-//                    logger.logInfo("run:drop by address filtering");
-//                    continue;
-//                }
-                //dg.readFully(b);
-                logger.logInfo("run:notify observer");
-                this.notifyObservers((Object) mesg);
+                logger.logInfo("run:received message from " + dg.getAddress());
+                logger.logInfo("Message from lat=" + mesg.getSenderLat() + " lon=" 
+                        + mesg.getSenderLon() + " elev=" + mesg.getSenderElev() +
+                        " dist="  + gps.getEuclidianDistFrom(mesg.getSenderLat(),
+                        mesg.getSenderLon(), mesg.getSenderElev()));
+
+                // logger.logInfo("Originator: " + AddressFiltering.longToAddress(mesg.getOriginator()));
+                // logger.logInfo("Sender: " + AddressFiltering.longToAddress(mesg.getSender()));
+                if(DIST_ENFORCED && RANGE <
+                        gps.getEuclidianDistFrom(mesg.getSenderLat(), mesg.getSenderLon(), mesg.getSenderElev())){
+                    logger.logInfo("Too far away, could not hear message");
+                    continue;
+                }
+                if(mesg.getMessageType() == MessageFactory.CLUSTER_MESSAGE){
+                    logger.logInfo("run:Cluster message: pass to ClusterManager");
+                    ClusterManager.getInstance().loadMessage((ClusterMessage) mesg, this);
+                }
+                if(mesg.getMessageType() == MessageFactory.PUB_SUB_MESSAGE){
+                    logger.logInfo("run:Pub Sub message: notify observers");
+                    this.notifyObservers((Object) mesg);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 logger.logWarning("run:not receive data");

@@ -34,6 +34,7 @@ package edu.umb.cs.tinydds.tinygiop;
 
 import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.L4.L4;
+import edu.umb.cs.tinydds.Sender;
 import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
 
@@ -41,7 +42,7 @@ import edu.umb.cs.tinydds.utils.Observer;
  *
  * @author pruet
  */
-public abstract class TinyGIOP extends Observable implements Observer{
+public abstract class TinyGIOP extends Observable implements Observer, Sender{
     protected L4 l4 = null;
 
     public void setL4(L4 l4) {

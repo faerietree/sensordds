@@ -34,11 +34,11 @@ import com.sun.spot.peripheral.Spot;
 // import com.sun.spot.sensorboard.peripheral.TemperatureInput;
 import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
+import edu.umb.cs.cluster.ClusterManager;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderListenerImpl;
 import edu.umb.cs.tinydds.DDSimpl.DomainParticipantImpl;
 import edu.umb.cs.tinydds.io.GPS;
-import edu.umb.cs.tinydds.utils.Geometry;
 import edu.umb.cs.tinydds.io.SimulatedGPS;
 import edu.umb.cs.tinydds.io.LED;
 import edu.umb.cs.tinydds.io.LightSensor;
@@ -47,7 +47,7 @@ import edu.umb.cs.tinydds.utils.Observable;
 import edu.umb.cs.tinydds.utils.Observer;
 import edu.umb.cs.tinydds.io.Switch;
 import edu.umb.cs.tinydds.io.SwitchStatus;
-import java.io.IOException;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import org.omg.dds.ContentFilteredTopic;
 import org.omg.dds.DataReader;
 import org.omg.dds.DataReaderListener;
@@ -67,7 +67,7 @@ import org.omg.dds.Topic;
 /* Testing application, press left hardware button for subscribing,
  * right hardware button for publishing 
  */
-public class ApplicationBS implements Observer {
+public class ApplicationBS implements Observer, GlobalConfiguration {
 
     protected DomainParticipant domainParticipant = null;
     protected Publisher publisher = null;
@@ -89,12 +89,13 @@ public class ApplicationBS implements Observer {
         leds = new LED();
         
         // Hard coded box of 60x60 nautical miles near UMass for GPS simulation
-        Geometry geom = new Geometry().new Rectangle2D(-70.5, 43, -69.5, 42);
-        SimulatedGPS.configure(geom, false);
         gps = SimulatedGPS.getInstance();
 
         // Create publisher
         domainParticipant = new DomainParticipantImpl();
+
+        if(CLUSTERING)
+            ClusterManager.getInstance().run(); // Start all clustering tasks
         
         logger.logInfo("initiate BASE STATION ID: " +
                 IEEEAddress.toDottedHex(Spot.getInstance().

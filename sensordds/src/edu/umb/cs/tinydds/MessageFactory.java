@@ -5,6 +5,7 @@
 package edu.umb.cs.tinydds;
 
 import edu.umb.cs.cluster.ClusterMessage;
+import edu.umb.cs.cluster.MessagePayloadCluster;
 import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 
@@ -32,7 +33,7 @@ public class MessageFactory implements GlobalConfiguration {
         else if(type == CLUSTER_MESSAGE){
            if(DEBUG && DBUG_LVL >= MEDIUM)
                logger.logInfo("Creating message of type CLUSTER_MESSAGE");
-           message = new ClusterMessage(new MessagePayloadBytes(new byte[data.length]));
+           message = new ClusterMessage(new MessagePayloadCluster(new byte[data.length]));
         }
         return message;
     }

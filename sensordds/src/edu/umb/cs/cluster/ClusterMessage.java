@@ -23,15 +23,19 @@ public class ClusterMessage extends AbstractMessage
 {
     public static final byte NEED_INFO = 0;
     public static final byte MY_INFO = 1;
+    public static final byte TAKE_CMS = 2;
+    public static final byte YOU_ARE_CH = 3;
+    public static final byte MY_CMS = 4;
+    public static final byte YOUR_CH = 5;
 
-    public static final byte NEED_CH= 2;
-    public static final byte MY_CM = 3;
+    // public static final byte NEED_CH= 4;
+    // public static final byte MY_CM = 4;
     
-    public static final byte CM_ACK = 4;
-    public static final byte MY_CMS = 5;
+   //  public static final byte CM_ACK = 6;
 
     protected MessagePayload payload;
     protected byte msgCode;
+    private int colorIndex;
 
     public ClusterMessage() {
         super();
@@ -67,6 +71,15 @@ public class ClusterMessage extends AbstractMessage
         this.payload = payload;
     }
 
+    public int getColorIndex() {
+        return colorIndex;
+    }
+
+    public void setColorIndex(int colorIndex) {
+        this.colorIndex = colorIndex;
+    }
+
+
     public byte[] marshall() {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         DataOutputStream dout = new DataOutputStream(bout);
@@ -84,6 +97,8 @@ public class ClusterMessage extends AbstractMessage
 
             
             dout.writeByte(msgCode);        //write what type of message it is
+            if((msgCode == YOU_ARE_CH) || msgCode == YOUR_CH)
+                dout.writeInt(colorIndex);
             if(carriesPayload(msgCode))
                 dout.write(payload.marshall());
             dout.flush();
@@ -109,10 +124,13 @@ public class ClusterMessage extends AbstractMessage
             setSenderElev(din.readDouble());
 
             setMsgCode(din.readByte());
+            if((msgCode == YOU_ARE_CH) || msgCode == YOUR_CH)
+                setColorIndex(din.readInt());
             
-            din.read(b);
-            payload.demarshall(b);
-            
+            if(carriesPayload(msgCode)){
+                din.read(b);
+                payload.demarshall(b);
+            }
        } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -126,8 +144,9 @@ public class ClusterMessage extends AbstractMessage
      * @return  true if this message requires a payload
      */
     private boolean carriesPayload(byte msgCode) {
+        return msgCode == TAKE_CMS;
 //        return (msgCode == MY_CM) ||
 //               (msgCode == MY_INFO);
-        return false;
+//        return false;
     }
 }

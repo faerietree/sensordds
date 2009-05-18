@@ -43,6 +43,7 @@ public interface GlobalConfiguration {
     public final static int DISP_DELAY = PING_DELAY + 4;
     public final static int EXP_DELAY = DISP_DELAY + 2;
     public final static int ONE_SECOND = 1000;
+    public final static int UNRESPONSIVE_TIME = 40 * ONE_SECOND;
     public final static long NOT_ASSIGNED = -1; // For node addresses
 
 }

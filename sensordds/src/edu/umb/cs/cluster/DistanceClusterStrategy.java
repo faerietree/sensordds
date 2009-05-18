@@ -6,6 +6,7 @@
 package edu.umb.cs.cluster;
 
 import edu.umb.cs.tinydds.io.GPS;
+import edu.umb.cs.tinydds.io.SimulatedGPS;
 import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 
 /**
@@ -13,11 +14,18 @@ import edu.umb.cs.tinydds.utils.GlobalConfiguration;
  *
  * @author francesco
  */
-public class distClusterStrategy implements ClusterStrategy, GlobalConfiguration {
+public class DistanceClusterStrategy implements ClusterStrategy, GlobalConfiguration {
 
     public boolean acceptMember(GPS chGPS, double cmLat, double cmLon, double cmElev,
                                 int memberCnt) {
        return chGPS.getEuclidianDistFrom(cmLat, cmLon, cmElev) < RANGE;
+    }
+
+    public boolean acceptMember(double chLat, double chLon, double chElev,
+                                double cmLat, double cmLon, double cmElev,
+                                int memberCnt) {
+        return SimulatedGPS.getEuclidianDist(chLat, chLon, chElev,
+                                             cmLat, cmLon, cmElev) < RANGE;
     }
 
     public String describe() {

@@ -111,7 +111,7 @@ public class ClusterMessage extends AbstractMessage
      public void demarshall(byte[] data) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         DataInputStream din = new DataInputStream(bin);
-        byte[] b = new byte[data.length];
+        byte[] b;
         try {
             din.readByte();   //eat the messageType flag
             
@@ -124,9 +124,13 @@ public class ClusterMessage extends AbstractMessage
             setSenderElev(din.readDouble());
 
             setMsgCode(din.readByte());
-            if((msgCode == YOU_ARE_CH) || msgCode == YOUR_CH)
+            if((msgCode == YOU_ARE_CH) || msgCode == YOUR_CH){
                 setColorIndex(din.readInt());
-            
+                b = new byte[data.length - 54];
+            }
+            else{
+                b = new byte[data.length - 50];
+            }
             if(carriesPayload(msgCode)){
                 din.read(b);
                 payload.demarshall(b);

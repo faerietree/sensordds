@@ -212,7 +212,7 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
                 int size = nodes.length;
                 if(DEBUG && DBUG_LVL >= LIGHT)
                     logger.logInfo("There are " + size + " records in the payload");
-                for(int i = 0; i < 1; i++){
+                for(int i = 0; i < size; i++){
                     // Set each node as a cluster member
                     ClusterMessage response = new ClusterMessage();
                     response.setMsgCode(ClusterMessage.YOUR_CH);

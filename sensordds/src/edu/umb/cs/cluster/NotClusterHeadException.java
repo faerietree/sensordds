@@ -15,7 +15,7 @@ class NotClusterHeadException extends Exception {
      * without detail message.
      */
     public NotClusterHeadException() {
-        super();
+        super( );
     }
 
     /**

@@ -18,7 +18,7 @@ public interface ClusterStrategy {
      * @param cmLat     latitude of cluster member candidate
      * @param cmLon     longitude of cluster member candidate
      * @param cmElev    elevation of cluster member candidate
-     * @param memberCnt number of cluster members candidate
+     * @param memberCnt number of cluster members that the CH already has
      * @return          true if this candidate can join this cluster
      */
     public boolean acceptMember(GPS chGPS,
@@ -26,6 +26,26 @@ public interface ClusterStrategy {
                                 double cmLon,
                                 double cmElev,
                                 int memberCnt);
+
+        /**
+     *
+     * @param chLat     latitude of cluster head
+     * @param chLon     longitude of cluster head
+     * @param chElev    elevation of cluster head
+     * @param cmLat     latitude of cluster member candidate
+     * @param cmLon     longitude of cluster member candidate
+     * @param cmElev    elevation of cluster member candidate
+     * @param memberCnt number of cluster members that the CH already has
+     * @return          true if this candidate can join this cluster
+     */
+    public boolean acceptMember(double chLat,
+                                double chLon,
+                                double chElev,
+                                double cmLat,
+                                double cmLon,
+                                double cmElev,
+                                int memberCnt);
+
 
     /**
      *

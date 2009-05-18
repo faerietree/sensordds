@@ -33,7 +33,8 @@ public class MessageFactory implements GlobalConfiguration {
         else if(type == CLUSTER_MESSAGE){
            if(DEBUG && DBUG_LVL >= MEDIUM)
                logger.logInfo("Creating message of type CLUSTER_MESSAGE");
-           message = new ClusterMessage(new MessagePayloadCluster(new byte[data.length]));
+           message = new ClusterMessage();
+           message.demarshall(data);
         }
         return message;
     }

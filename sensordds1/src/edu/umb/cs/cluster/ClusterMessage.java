@@ -8,6 +8,8 @@ package edu.umb.cs.cluster;
 import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.MessageFactory;
 import edu.umb.cs.tinydds.MessagePayload;
+import edu.umb.cs.tinydds.utils.GlobalConfiguration;
+import edu.umb.cs.tinydds.utils.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -19,7 +21,7 @@ import java.io.IOException;
  * @author Vinita
  * @author francesco    Added GPS coordinates to the payload
  */
-public class ClusterMessage extends AbstractMessage
+public class ClusterMessage extends AbstractMessage implements GlobalConfiguration
 {
     public static final byte NEED_INFO = 0;
     public static final byte MY_INFO = 1;
@@ -36,10 +38,12 @@ public class ClusterMessage extends AbstractMessage
     protected MessagePayload payload;
     protected byte msgCode;
     private int colorIndex;
+    private Logger logger;
 
     public ClusterMessage() {
         super();
         messageType = MessageFactory.CLUSTER_MESSAGE;
+        logger = new Logger("ClusterMessage");
     }
 
     public ClusterMessage(MessagePayload payload) {
@@ -51,6 +55,7 @@ public class ClusterMessage extends AbstractMessage
     {
         super((byte)MessageFactory.CLUSTER_MESSAGE, sender, receiver, originator);
         this.payload = payload;
+        logger = new Logger("ClusterMessage");
     }
     
     public void setMsgCode(byte msgCode)
@@ -111,6 +116,8 @@ public class ClusterMessage extends AbstractMessage
      public void demarshall(byte[] data) {
         ByteArrayInputStream bin = new ByteArrayInputStream(data);
         DataInputStream din = new DataInputStream(bin);
+        if(DEBUG && DBUG_LVL >= MEDIUM)
+            logger.logInfo("demarshall: size of data is " + data.length + " bytes" );
         byte[] b;
         try {
             din.readByte();   //eat the messageType flag
@@ -133,7 +140,7 @@ public class ClusterMessage extends AbstractMessage
             }
             if(carriesPayload(msgCode)){
                 din.read(b);
-                payload.demarshall(b);
+                payload = new MessagePayloadCluster(b);
             }
        } catch (IOException ex) {
             ex.printStackTrace();
@@ -151,6 +158,5 @@ public class ClusterMessage extends AbstractMessage
         return msgCode == TAKE_CMS;
 //        return (msgCode == MY_CM) ||
 //               (msgCode == MY_INFO);
-//        return false;
     }
 }

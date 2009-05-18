@@ -5,7 +5,6 @@
 package edu.umb.cs.cluster;
 
 import com.sun.spot.peripheral.Spot;
-import com.sun.spot.sensorboard.peripheral.LEDColor;
 import com.sun.spot.util.IEEEAddress;
 import edu.umb.cs.tinydds.L3.L3;
 import edu.umb.cs.tinydds.Sender;
@@ -79,16 +78,19 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
         if(isBaseStation){
             if(DEBUG && DBUG_LVL >= MEDIUM)
                 logger.logInfo("run:Base Station");
+            
             creatBaseStationTasks();
             clusterTimer.scheduleAtFixedRate(task1, PING_DELAY, PING_INTERVAL * ONE_SECOND);
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("run:task1: collect network info every "
                     + PING_INTERVAL + "s: start in " + PING_DELAY + "s.");
+
             if(DEBUG && DBUG_LVL >= LIGHT){
                 clusterTimer.scheduleAtFixedRate(task2, DISP_DELAY, PING_INTERVAL * ONE_SECOND);
                 logger.logInfo("run:task2: show nodes in network every "
                         + PING_INTERVAL + "s: start in " + DISP_DELAY + "s.");
             }
+
             clusterTimer.scheduleAtFixedRate(task3, EXP_DELAY, EXPIRE_INTERVAL * ONE_SECOND);
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("run:task3: remove unresponsive nodes every "
@@ -187,19 +189,16 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("loadMessage:received message: NEED_INFO");
             if(!isBaseStation){
-                ClusterMessage response = new ClusterMessage();
-                response.setMsgCode(ClusterMessage.MY_INFO);
-                response.setReceiver(msg.getOriginator()); // return to sender
-                response.setOriginator(L3.getAddress());
-                mailer.send(response);
+                messageNeedInfoHandler(msg, mailer);
             }
         }
 
         else if (code == ClusterMessage.MY_INFO){
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("loadMessage:received message: MY_INFO");
-            if(isBaseStation)
+            if(isBaseStation) {
                 messageMyInfoHandler(msg, mailer);
+            }
         }
 
         else if (code == ClusterMessage.TAKE_CMS){
@@ -207,24 +206,7 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
                 logger.logInfo("loadMessage:received message: TAKE_CMS");
             // The BS has already determined that these nodes should be CM of this CH
             if(isClusterHead){  // Just to make sure, but this message is only sent to CHs
-                MessagePayloadCluster payload = (MessagePayloadCluster) msg.getPayload();
-                Node[] nodes = payload.getNodes();
-                int size = nodes.length;
-                if(DEBUG && DBUG_LVL >= LIGHT)
-                    logger.logInfo("There are " + size + " records in the payload");
-                for(int i = 0; i < size; i++){
-                    // Set each node as a cluster member
-                    ClusterMessage response = new ClusterMessage();
-                    response.setMsgCode(ClusterMessage.YOUR_CH);
-                    response.setColorIndex(clusterColorPosition);
-                    response.setReceiver(nodes[i].getNodeID().longValue());
-                    response.setOriginator(L3.getAddress());
-                    mailer.send(response);
-                    if(DEBUG && DBUG_LVL >= LIGHT)
-                        logger.logInfo("Sending TAKE_CMS to " +
-                                IEEEAddress.toDottedHex(nodes[i].getNodeID().longValue()) +
-                                " color index is " + clusterColorPosition);
-                }
+                messageTakeCmsHandler(msg, mailer);
             }
         }
 
@@ -244,10 +226,7 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("loadMessage:received message: YOUR_CH");
             if(!isClusterHead){
-                LED leds = new LED();
-                clusterColorPosition = msg.getColorIndex();
-                leds.setColor(0, ClusterColors.getColor(clusterColorPosition));
-                leds.setOn(0);
+                messageYourChHandler(msg);
             }
         }
 
@@ -280,7 +259,7 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
 
         /**
          * task2: display to the users the status of the network and its clusters
-         * conditions: this is task is fro BS only
+         * conditions: this task is for BS only
          */
         task2 = new TimerTask(){
             public void run() {
@@ -313,6 +292,13 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
             }
         };
 
+        /**
+         * task3: Remove unresponsive nodes from the list of nodes and the active
+         *        clusters.
+         * conditions: this task is for base stations only.  If the node to be
+         *             removed is a CH, its CM will be removed too (at the next
+         *             ping cycle, they will be re-added to another CH);
+         */
         task3 = new TimerTask(){
             public void run() {
                 if(DEBUG && DBUG_LVL >= MEDIUM)
@@ -429,6 +415,48 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
         }
     }
 
+    private void messageNeedInfoHandler(ClusterMessage msg, Sender mailer) {
+        ClusterMessage response = new ClusterMessage();
+        response.setMsgCode(ClusterMessage.MY_INFO);
+        response.setReceiver(msg.getOriginator()); // return to sender
+        response.setOriginator(L3.getAddress());
+        mailer.send(response);
+    }
+
+        private void messageTakeCmsHandler(ClusterMessage msg, Sender mailer) {
+        // Just to make sure, but this message is only sent to CHs
+        // The BS has already determined that these nodes should be CM of this CH
+        MessagePayloadCluster payload = (MessagePayloadCluster) msg.getPayload();
+        Node[] nodes = payload.getNodes();
+        int size = nodes.length;
+        if (DEBUG && DBUG_LVL >= LIGHT) {
+            logger.logInfo("There are " + size + " records in the payload");
+        }
+        for (int i = 0; i < size; i++) {
+            // Set each node as a cluster member
+            ClusterMessage response = new ClusterMessage();
+            response.setMsgCode(ClusterMessage.YOUR_CH);
+            response.setColorIndex(clusterColorPosition);
+            response.setReceiver(nodes[i].getNodeID().longValue());
+            response.setOriginator(L3.getAddress());
+            mailer.send(response);
+            if (DEBUG && DBUG_LVL >= LIGHT) {
+                logger.logInfo("Sending TAKE_CMS to " +
+                        IEEEAddress.toDottedHex(nodes[i].getNodeID().longValue())
+                        + " color index is " + clusterColorPosition);
+            }
+        }
+    }
+        
+
+    private void messageYourChHandler(ClusterMessage msg) {
+        LED leds = new LED();
+        clusterColorPosition = msg.getColorIndex();
+        leds.setColor(0, ClusterColors.getColor(clusterColorPosition));
+        leds.setOn(0);
+    }
+
+    
     protected void removeNode(Long nodeID){
         networkMembers.remove(nodeID);
 

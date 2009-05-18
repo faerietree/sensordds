@@ -30,7 +30,7 @@ public interface GlobalConfiguration {
                                              IS_DYNAMIC_CLUSTERING;
     public final static boolean DIST_ENFORCED = IS_STATIC_CLUSTERING ||
                                                 IS_DYNAMIC_CLUSTERING;
-    public final static double RANGE = IS_STATIC_CLUSTERING ? 0.8 :
+    public final static double RANGE = IS_STATIC_CLUSTERING ? 1.4 :
                                        IS_DYNAMIC_CLUSTERING? 0.5 : 0;
     public final static boolean CH_CH_COMM_ENFORCED = IS_STATIC_CLUSTERING ||
                                                       IS_DYNAMIC_CLUSTERING;

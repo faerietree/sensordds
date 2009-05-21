@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umb.cs.tinidds.cluster;
+package edu.umb.cs.tinydds.cluster;
 
 import com.sun.spot.sensorboard.peripheral.LEDColor;
 

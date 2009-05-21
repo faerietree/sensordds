@@ -31,7 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package edu.umb.cs.tinydds.OERP;
 
 // import com.sun.spot.sensorboard.peripheral.LEDColor;
-import edu.umb.cs.tinidds.cluster.ClusterManager;
+import edu.umb.cs.tinydds.cluster.ClusterManager;
 import edu.umb.cs.tinydds.AbstractMessage;
 import edu.umb.cs.tinydds.DDS;
 import edu.umb.cs.tinydds.L3.AddressFiltering;

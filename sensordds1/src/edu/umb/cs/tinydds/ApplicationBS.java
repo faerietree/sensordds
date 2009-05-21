@@ -34,7 +34,7 @@ import com.sun.spot.peripheral.Spot;
 // import com.sun.spot.sensorboard.peripheral.TemperatureInput;
 import com.sun.spot.util.IEEEAddress;
 import com.sun.spot.util.Utils;
-import edu.umb.cs.tinidds.cluster.ClusterManager;
+import edu.umb.cs.tinydds.cluster.ClusterManager;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderImpl;
 import edu.umb.cs.tinydds.DDSimpl.DataReaderListenerImpl;
 import edu.umb.cs.tinydds.DDSimpl.DomainParticipantImpl;

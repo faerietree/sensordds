@@ -4,8 +4,8 @@
  */
 package edu.umb.cs.tinydds;
 
-import edu.umb.cs.tinidds.cluster.ClusterMessage;
-import edu.umb.cs.tinidds.cluster.MessagePayloadCluster;
+import edu.umb.cs.tinydds.cluster.ClusterMessage;
+import edu.umb.cs.tinydds.cluster.MessagePayloadCluster;
 import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 

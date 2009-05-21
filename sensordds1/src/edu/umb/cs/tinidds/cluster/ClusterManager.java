@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umb.cs.cluster;
+package edu.umb.cs.tinidds.cluster;
 
 import com.sun.spot.peripheral.Spot;
 import com.sun.spot.util.IEEEAddress;

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package edu.umb.cs.cluster;
+package edu.umb.cs.tinidds.cluster;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

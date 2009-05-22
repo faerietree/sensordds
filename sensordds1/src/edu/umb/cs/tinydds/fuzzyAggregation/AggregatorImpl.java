@@ -58,6 +58,19 @@ public class AggregatorImpl implements Aggregator {
                 // code to create the name of the particular record.
                 
             }
+            catch(RecordStoreNotFoundException error)
+            {
+                System.out.println("Record store not found. Creating a new record store.");
+                store.openRecordStore("measurements", true)
+                this.addData(phenom, geom, timestamp, value);
+                store.addRecord(convertRecord(phenom,geom,timestamp,value),0,0);                
+            }
+            catch(RecordStoreFullException error)
+            {
+                System.out.println("RecordStore full. Removing oldest Record ");
+                store.deleteRecord(1);
+                store.addRecord(convertRecord(phenom,geom,timestamp,value),0,0);
+            }
             catch(Exception e) { e.printStackTrace(); } 
         }
         // End samatha.
@@ -69,7 +82,7 @@ public class AggregatorImpl implements Aggregator {
         
         if(function.equals(MAX))
         {
-            // call maximum function.
+           // call max.
          
         }
         else if (function.equals(AVG))
@@ -183,12 +196,15 @@ public class AggregatorImpl implements Aggregator {
     private double max(String phenom)
     {
      double maxValue = -1;
+     Vector rec;
       try 
       {
             byte record[];
             for(int i = 0; i < store.getNumRecords(); i++)
             {
                 record = store.getRecord(i);
+                rec = getRecord(record);
+              //  rec.lastElement().
 
             }
       }

@@ -2,7 +2,11 @@ package edu.umb.cs.tinydds.fuzzyAggregation;
 
 import edu.umb.cs.tinydds.utils.Geometry;
 import java.util.Vector;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Date;
 import javax.microedition.rms.RecordStore;
 import javax.microedition.rms.RecordStoreException;
 import javax.microedition.rms.RecordStoreFullException;
@@ -60,16 +64,28 @@ public class AggregatorImpl implements Aggregator {
             }
             catch(RecordStoreNotFoundException error)
             {
-                System.out.println("Record store not found. Creating a new record store.");
-                store.openRecordStore("measurements", true)
+                try 
+                {
+                System.err.println("Record store not found. Creating a new record store.");
+                store.openRecordStore("measurements", true);
                 this.addData(phenom, geom, timestamp, value);
                 store.addRecord(convertRecord(phenom,geom,timestamp,value),0,0);                
-            }
+                }
+            catch (Exception e)  { e.printStackTrace(); } 
+             }
             catch(RecordStoreFullException error)
             {
-                System.out.println("RecordStore full. Removing oldest Record ");
+            try{
+                System.err.println("RecordStore full. Removing oldest Record ");
                 store.deleteRecord(1);
-                store.addRecord(convertRecord(phenom,geom,timestamp,value),0,0);
+                this.addData(phenom,geom,timestamp,value);
+                }
+            catch (Exception e)  { e.printStackTrace(); } 
+            }
+            catch(RecordStoreException error)
+            {
+                System.err.println("Exception while trying to add a record");
+                error.printStackTrace();
             }
             catch(Exception e) { e.printStackTrace(); } 
         }
@@ -80,40 +96,73 @@ public class AggregatorImpl implements Aggregator {
         // give the maximum element among the "phenom" values with function x. 
         // at present this is not valuable, how ever, we are still having it for the future functionality.
         
+        Vector ret = new Vector();
+        Date now = new Date();
+        Geometry geom = null; 
+       
         if(function.equals(MAX))
         {
-           // call max.
-         
+           double d = max(phenom);
+           
+           ret.addElement(new Double(d));
+           ret.addElement(new Long(now.getTime()));        
+           ret.addElement(geom);
         }
         else if (function.equals(AVG))
         {
-            // call average.
+            double d = avg(phenom);
+           
+           ret.addElement(new Double(d));
+           ret.addElement(new Long(now.getTime()));        
+           ret.addElement(geom);
         }
         else if (function.equals(MIN))
         {
-            //  call minimum.
+            double d = min(phenom);
+           
+           ret.addElement(new Double(d));
+           ret.addElement(new Long(now.getTime()));        
+           ret.addElement(geom);
         }
-        return null;
+        return ret;
         
     }
 
     public Vector getTemporalAggregation(String function, String phenom) 
     {
+        // give the maximum element among the "phenom" values with function x. 
+        // at present this is not valuable, how ever, we are still having it for the future functionality.
+        
+        Vector ret = new Vector();
+        Date now = new Date();
+        Geometry geom = null; 
+       
         if(function.equals(MAX))
         {
-            // call maximum function.
-         
+           double d = max(phenom);
+           
+           ret.addElement(new Double(d));
+           ret.addElement(new Long(now.getTime()));        
+           ret.addElement(geom);
         }
         else if (function.equals(AVG))
         {
-            // call average.
+            double d = avg(phenom);
+           
+           ret.addElement(new Double(d));
+           ret.addElement(new Long(now.getTime()));        
+           ret.addElement(geom);
         }
         else if (function.equals(MIN))
         {
-            //  call minimum.
+            double d = min(phenom);
+           
+           ret.addElement(new Double(d));
+           ret.addElement(new Long(now.getTime()));        
+           ret.addElement(geom);
         }
-        
-        return null;
+        return ret;
+     
     }
     
     public void registerAggregation(String function, String phenom) {
@@ -123,6 +172,13 @@ public class AggregatorImpl implements Aggregator {
     public void unregisterAggregation(String function, String phenom) {
     }
 
+    private class record { 
+      public  String phenom;
+      public  double value; 
+      public long timestamp;
+      //public Geometry geom; 
+    };
+    
     private byte[] convertRecord(String phenom, Geometry geom, long timestamp, double value)
     {
       byte[] outputRecord = null;
@@ -167,10 +223,10 @@ public class AggregatorImpl implements Aggregator {
 
              phenom = inputDataStream.readUTF();
              timestamp = inputDataStream.readLong();
-             /* for geometry // uncomment when geometry works.  */
+             /* for geometry // uncomment when geometry works.  
               x = inputDataStream.readDouble();
               y = inputDataStream.readDouble();
-            
+            */
              value = inputDataStream.readDouble();
              
              inputStream.reset();
@@ -192,43 +248,119 @@ public class AggregatorImpl implements Aggregator {
           }
         return rec;
     }
+    
+    private record getLocalRecord(byte[] record)
+    {
+       record rec = null;
+       try
+          {   
+            String phenom = null;
+            long timestamp = 0;
+            
+            /* for geometry  // uncomment when geometry works.*/
+          //  double x, y; 
+            
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(record);
+            DataInputStream inputDataStream = new DataInputStream(inputStream);
+
+             rec.phenom = inputDataStream.readUTF();
+             rec.timestamp = inputDataStream.readLong();
+             /* for geometry // uncomment when geometry works.  
+             x = inputDataStream.readDouble();
+             y = inputDataStream.readDouble();
+            */
+             rec.value = inputDataStream.readDouble();
+             inputStream.reset();
+             inputStream.close();
+             inputDataStream.close();
+          }
+       catch (Exception error)
+          {
+            System.err.println("Error while converting record from ByteArray in to record.");
+            error.printStackTrace();
+          } 
+       return rec;
+    }
  
     private double max(String phenom)
     {
      double maxValue = -1;
-     Vector rec;
+     record rec;
       try 
       {
-            byte record[];
+            byte byteRecord[];
             for(int i = 0; i < store.getNumRecords(); i++)
             {
-                record = store.getRecord(i);
-                rec = getRecord(record);
-              //  rec.lastElement().
-
-            }
+                byteRecord = store.getRecord(i);
+                rec = getLocalRecord(byteRecord);
+                if(phenom.equals(rec.phenom))
+                {
+                    if(maxValue < rec.value)
+                        maxValue = rec.value;
+                }
+           }
       }
       catch( Exception e)
       {
-          
+          System.err.println("Error while getting maximum record");
+          e.printStackTrace();
       }
       return maxValue;
     }
     
     private double min(String phenom)
     {
-        double minValue = -1;
-        
-        return minValue;
+     double minValue = 999999;
+     record rec;
+      try 
+      {
+            byte byteRecord[];
+            for(int i = 0; i < store.getNumRecords(); i++)
+            {
+                byteRecord = store.getRecord(i);
+                rec = getLocalRecord(byteRecord);
+                if(phenom.equals(rec.phenom))
+                {
+                    if(minValue > rec.value)
+                        minValue = rec.value;
+                }
+           }
+      }
+      catch( Exception e)
+      {
+          System.err.println("Error while getting maximum record");
+          e.printStackTrace();
+      }
+      return minValue;
         
     }
-    
+   
     private double avg(String phenom)
     {
-        double avgValue = -1,sum = -1;
-        int count = 0;
-        
-               
-        return avgValue;
+      double avgValue = -1,sum = 0;
+      int count = 0;
+      record rec;
+      try 
+      {
+            byte byteRecord[];
+            count =  store.getNumRecords();
+            for(int i = 0; i < count; i++)
+            {
+                byteRecord = store.getRecord(i);
+                rec = getLocalRecord(byteRecord);
+                if(phenom.equals(rec.phenom))
+                {
+                    sum += rec.value;
+                }
+           }
+            
+           avgValue = sum/count;
+      }
+      catch( Exception e)
+      {
+          System.err.println("Error while getting maximum record");
+          e.printStackTrace();
+      }
+      return avgValue;
     }
 }

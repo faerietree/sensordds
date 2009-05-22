@@ -265,7 +265,7 @@ public class AggregatorImpl implements Aggregator {
 
              rec.phenom = inputDataStream.readUTF();
              rec.timestamp = inputDataStream.readLong();
-             /* for geometry // uncomment when geometry works.  
+             /* for geometry // uncomment when geometry is integrated by customization. 
              x = inputDataStream.readDouble();
              y = inputDataStream.readDouble();
             */

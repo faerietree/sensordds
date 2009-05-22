@@ -146,18 +146,18 @@ public class AggregatorImpl implements Aggregator {
             String phenom = null;
             long timestamp = 0;
             double value;
-            /* for geometry  // uncomment when geometry works.
+            /* for geometry  // uncomment when geometry works.*/
             double x, y; 
-            */
+            
             ByteArrayInputStream inputStream = new ByteArrayInputStream(record);
             DataInputStream inputDataStream = new DataInputStream(inputStream);
 
              phenom = inputDataStream.readUTF();
              timestamp = inputDataStream.readLong();
-             /* for geometry // uncomment when geometry works. 
+             /* for geometry // uncomment when geometry works.  */
               x = inputDataStream.readDouble();
               y = inputDataStream.readDouble();
-             */
+            
              value = inputDataStream.readDouble();
              
              inputStream.reset();

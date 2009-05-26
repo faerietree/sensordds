@@ -1,0 +1,14 @@
+1) ParseException
+protected String eol = System.getProperty("line.separator", "\n");
+
+gets changed to
+
+protected String eol = (null != System.getProperty("line.separator")) ? System.getProperty("line.separator") : "\n";
+
+2) DDSParser
+
+new RuntimeException(e);
+
+gets changed to
+
+new RuntimeException(e.toString);

@@ -1,0 +1,276 @@
+//options {
+//	STATIC=false;
+//}
+
+PARSER_BEGIN(DDSParser)
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.util.Hashtable;
+import java.util.Enumeration;
+
+/**
+ *
+ * 
+ *
+ * @author matt calder
+ */
+public class DDSParser {
+
+	private static Hashtable selectors = new Hashtable();
+
+	public DDSParser(String s){
+		this(new InputStreamReader(new ByteArrayInputStream(s.getBytes())));
+		
+		selectors.put("Temporal", "max"); //default selection is most recent measurement
+	}
+	
+	public static void main(String[] args){
+
+		try {
+			String query = args[0];
+			
+			DDSParser parser = new DDSParser(query);
+			Expression exp = parser.parse();
+			
+			//check that we picked up the selectors
+			Hashtable selectors = parser.getSelectors();
+			for(Enumeration keys = selectors.keys(); keys.hasMoreElements(); ){
+				Object element = keys.nextElement();
+				System.out.println(element+" with "+selectors.get(element));	
+			}
+			
+			//build the table of variables
+			Hashtable vars = new Hashtable();
+			vars.put("Phenom", "5.0");
+			vars.put("Temporal", ""+System.currentTimeMillis());
+			
+			if(exp != null){
+				boolean result = exp.eval(vars);
+				System.out.println("result: "+result);	
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public interface Expression {
+	       public boolean eval(Hashtable vars);
+	}
+	
+	public static Hashtable getSelectors(){
+		return selectors;
+	}
+	
+	static class AndOrExpression implements Expression {
+	       
+	       private Expression lhs;
+	       private Expression rhs;
+	       private String operator;
+
+	       public AndOrExpression(Expression lhs, Expression rhs, String operator){
+	       	      this.lhs = lhs;
+		      this.rhs = rhs;
+		      this.operator = operator;
+	       }
+
+	       public boolean eval(Hashtable vars){
+	       	      
+		      if(operator.equals("&&")){
+			   return lhs.eval(vars) && rhs.eval(vars);
+		      }
+		      else { 
+		      	   return lhs.eval(vars) || rhs.eval(vars);
+		      }
+	       }
+	}
+
+	static class RelationalExpression implements Expression {
+		
+		private String lhs;
+		private String rhs;
+		private String operator;
+		private boolean lhsIsVar;		
+
+		public RelationalExpression(String lhs, String rhs, String operator, boolean lhsIsVar){
+			this.lhs = lhs;
+			this.rhs = rhs;
+			this.operator = operator;
+			this.lhsIsVar = lhsIsVar;
+		}	
+		
+		public boolean eval(Hashtable vars){
+		       	
+			double lhsValue;
+			double rhsValue;
+			
+			if(lhsIsVar){	
+			    String lhsValueString = (String)vars.get(lhs);
+			    lhsValue = Double.parseDouble(lhsValueString);
+			    rhsValue = Double.parseDouble(rhs);
+			}
+			else {
+			    String rhsValueString = (String)vars.get(rhs);
+			    rhsValue = Double.parseDouble(rhsValueString);
+			    lhsValue = Double.parseDouble(lhs);
+			}
+			
+
+			if(operator.equals(">") || operator.equalsIgnoreCase("after")){
+				return lhsValue > rhsValue;	
+			}
+			else if(operator.equals("<") || operator.equalsIgnoreCase("before")) {
+				return lhsValue < rhsValue;
+			}
+			else if(operator.equals("=")){
+				return lhsValue == rhsValue;
+			}
+			else if(operator.equals("<>")){
+				return lhsValue != rhsValue;
+			}
+			else 
+				return false;
+			
+		}		
+	}
+}	
+
+PARSER_END(DDSParser)
+
+/** skip these characters, they are considered "white space" **/
+SKIP :
+{
+	" "
+	| "\t"
+	| "\r"
+	| "\n"
+	
+}
+
+TOKEN: /* Reserved Tokens for DDSQL */
+{
+		<PHENOM: "Phenom">
+	|	<TEMPORAL: "Temporal">
+	|	<BEFORE: ("BEFORE" | "before")>
+	|	<AFTER: ("AFTER" | "after")>
+	|	<BETWEEN: ("BETWEEN" | "between")>
+	|	<AND: ("and" | "AND")>
+	|	<OR: ("or" | "OR")>
+	|	<LPAREN: "(">
+	|	<RPAREN: ")">
+	|	<EQUALS: "=">
+	|	<NOTEQUAL: "<>">
+	|	<LT: "<">
+	|	<GT: ">">
+	|	<COMMA: ",">
+	| 	<NATURALNUM: ("0") | (["1"-"9"]) (["0"-"9"])* >
+	|	<REALNUM: (<NATURALNUM>) (<REALPART>) 
+			| (<REALPART>)
+		>	
+	|	<#REALPART: (".") (["0"-"9"])+ >
+	|	<ATOM: ((["A"-"Z", "a"-"z"])+ (["0"-"9"])*)+ >
+}
+
+Expression parse() :
+{
+	Expression exp = null;
+}
+{
+	((exp = selectors()) | (exp = expression()))
+	{return exp;}
+}
+
+
+Expression selectors() :
+{
+	Expression exp = null;
+	Token function, _type;
+}
+{
+	( 
+	  (function = <ATOM>)
+	  (<LPAREN>)
+	  (_type = <PHENOM> | _type = <TEMPORAL>)
+	  (<RPAREN>)
+	  { selectors.put(_type.image, function.image); }
+	)
+	
+	(<COMMA> (exp = expression()))?
+	
+	{return exp;}
+}
+
+Expression expression() :
+{
+	Expression lhs = null, rhs = null;
+}
+{
+	lhs = condition() 
+	( 
+	  ( 
+	    <AND> rhs = condition() { lhs = new AndOrExpression(lhs, rhs, "&&"); } | 
+	    <OR> rhs = condition() { lhs = new AndOrExpression(lhs, rhs, "||"); } 
+	  )
+	)*
+	{ return lhs; }
+}
+
+Expression condition() :
+{
+	Expression exp;
+}
+{
+	( 
+	  (exp = typeExpression()) |
+	  (<LPAREN> exp = expression() <RPAREN>)
+	)	
+	{ return exp; }
+}	
+
+Expression typeExpression() :
+{
+	Token tOp, tNum, tType;
+}
+{
+	(<PHENOM>)
+	(tOp = relationalOp())
+	((tNum=<REALNUM>) | (tNum=<NATURALNUM>))
+	{ return new RelationalExpression("Phenom", tNum.image, tOp.image, true); }
+	|
+	(<TEMPORAL>)
+	((tOp = relationalOp()) | (tOp = temporalOp()))
+	(tNum=<NATURALNUM>)
+	{ return new RelationalExpression("Temporal", tNum.image, tOp.image, true); }
+	|
+	(tNum=<REALNUM>) 
+	(tOp = relationalOp())
+	(<TEMPORAL>)
+	{ return new RelationalExpression(tNum.image, "Temporal", tOp.image, false); }
+	|
+	(tNum=<NATURALNUM>)
+	(  ((tOp = relationalOp()) ((tType = <PHENOM>) | (tType = <TEMPORAL>))) 
+	   |
+	   (tOp = temporalOp()) (tType = <TEMPORAL>)
+	)
+	{ return new RelationalExpression(tNum.image, tType.image, tOp.image, false); }
+		
+}
+
+Token temporalOp() :
+{
+	Token tOp;	
+}
+{
+	(tOp=<BEFORE> | tOp=<AFTER>)
+	{ return tOp; }
+}
+
+Token relationalOp() :
+{
+	Token tOp;
+}
+{
+	(tOp=<EQUALS> | tOp=<LT> | tOp=<GT> | tOp=<NOTEQUAL>)
+	{ return tOp; }
+}

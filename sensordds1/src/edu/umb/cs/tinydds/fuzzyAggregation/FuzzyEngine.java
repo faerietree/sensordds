@@ -15,6 +15,10 @@ import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.MessagePayloadFuzzy;
 import edu.umb.cs.tinydds.MessagePayload;
+import edu.umb.cs.tinydds.cluster.ClusterMessage;
+import edu.umb.cs.tinydds.cluster.ClusterManager;
+import edu.umb.cs.tinydds.L3.L3;
+import edu.umb.cs.tinydds.L3.OneHop;
 import edu.umb.cs.tinydds.MessageFactory;
 
 public class FuzzyEngine implements GlobalConfiguration
@@ -183,7 +187,12 @@ public void processTemp(float x)
    FuzzyPayload.setValue(7, Unsafe(x));
    FuzzyPayload.setValue(8, Decrease(x));
    FuzzyPayload.setValue(9, NoChange(x));
-  
+   ClusterMessage msg = new ClusterMessage();
+   msg.setMsgCode(ClusterMessage.FUZZY);
+   msg.setOriginator(L3.getAddress());
+   msg.setReceiver(ClusterManager.getNextMember().longValue());
+   ClusterManager.getInstance().loadMessage(msg, new OneHop());
+
 }
 
 public void processPayload(MessagePayload payload)

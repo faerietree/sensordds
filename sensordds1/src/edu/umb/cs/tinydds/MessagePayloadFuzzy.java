@@ -37,16 +37,16 @@ public class MessagePayloadFuzzy implements MessagePayload {
  * ....
  */
 
-	private static final int OFFSET_FREEZING = 0;
-	private static final int OFFSET_COLD = 1;
-	private static final int OFFSET_WARM = 2;
-	private static final int OFFSET_LOW = 3;
-	private static final int OFFSET_IDEAL = 4;
-	private static final int OFFSET_HIGH = 5;
-	private static final int OFFSET_SAFE = 6;
-	private static final int OFFSET_UNSAFE = 7;
-	private static final int OFFSET_CRITICAL = 8;
-	private static final int OFFSET_NONCRITICAL = 9;
+	static final int OFFSET_FREEZING = 0;
+	static final int OFFSET_COLD = 1;
+	static final int OFFSET_WARM = 2;
+	static final int OFFSET_LOW = 3;
+	static final int OFFSET_IDEAL = 4;
+	static final int OFFSET_HIGH = 5;
+	static final int OFFSET_SAFE = 6;
+	static final int OFFSET_UNSAFE = 7;
+	static final int OFFSET_CRITICAL = 8;
+	static final int OFFSET_NONCRITICAL = 9;
 
     private static final int MU_BUFF_SIZE = 10;
     private static final int PRECISION = 100;

@@ -13,20 +13,24 @@ package edu.umb.cs.tinydds.fuzzyAggregation;
 import com.sun.spot.peripheral.Spot;
 import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
+import edu.umb.cs.tinydds.MessagePayloadFuzzy;
 
 public class FuzzyEngine
 {
 private Logger log = new Logger();
-private FuzzyEngine instance;
+private static FuzzyEngine instance;
+private static MessagePayloadFuzzy FuzzyPayload;
 
 private FuzzyEngine()
 {
-    if(instance == null)
-        instance = new FuzzyEngine();
+  if(FuzzyPayload == null)
+        FuzzyPayload = new MessagePayloadFuzzy();
 }
 
 public FuzzyEngine getInstance()
 {
+    if(instance == null)
+        instance = new FuzzyEngine();
     return instance;
 }
 
@@ -146,6 +150,35 @@ private float NoChange(float x)
         return (-1*(x*x/4)+x);
     else
         return 0;
+}
+
+/**     
+ * Following method sets the fields of Fuzzymessage pay load accourding to following offsets. 
+ * these are Mu values.
+ *      OFFSET_FREEZING = 0;
+	OFFSET_COLD = 1;
+	OFFSET_WARM = 2;
+	OFFSET_LOW = 3;
+	OFFSET_IDEAL = 4;
+	OFFSET_HIGH = 5;
+	OFFSET_SAFE = 6;
+	OFFSET_UNSAFE = 7;
+	OFFSET_CRITICAL = 8;
+	OFFSET_NONCRITICAL = 9;
+**/
+
+public void processTemp(float x)
+{
+   FuzzyPayload.setValue(0, Freezing(x));
+   FuzzyPayload.setValue(1, Cold(x));
+   FuzzyPayload.setValue(2, Hot(x));
+   FuzzyPayload.setValue(3, Low(x));
+   FuzzyPayload.setValue(4, Ideal(x));
+   FuzzyPayload.setValue(5, High(x));
+   FuzzyPayload.setValue(6, Safe(x));
+   FuzzyPayload.setValue(7, Unsafe(x));
+   FuzzyPayload.setValue(8, Decrease(x));
+   FuzzyPayload.setValue(9, NoChange(x));
 }
 
 }

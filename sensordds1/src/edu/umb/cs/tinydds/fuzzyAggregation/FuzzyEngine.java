@@ -200,39 +200,38 @@ private float NoChange(float x)
 
 public void processTemp(float x)
 {
-   if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("Processing Temperature "+ x);
+  log.logInfo("FUZZY: Processing Temperature "+ x);
 
    FuzzyPayload.setValue(0, Freezing(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Freezing "+ Freezing(x));
+        log.logInfo("FUZZY: Processing Freezing "+ FuzzyPayload.getValue(0));
    FuzzyPayload.setValue(1, Cold(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Cold "+ Cold(x));
+        log.logInfo("FUZZY: Processing Cold "+ FuzzyPayload.getValue(1));
    FuzzyPayload.setValue(2, Hot(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Warm "+ Hot(x));
+        log.logInfo("FUZZY: Processing Warm "+ FuzzyPayload.getValue(2));
    FuzzyPayload.setValue(3, Low(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Airflow Low "+ Low(x));
+        log.logInfo("FUZZY: Processing Airflow Low "+ FuzzyPayload.getValue(3));
    FuzzyPayload.setValue(4, Ideal(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Airflow Ideal"+ Ideal(x));
+        log.logInfo("FUZZY: Processing Airflow Ideal"+ FuzzyPayload.getValue(4));
    FuzzyPayload.setValue(5, High(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing High"+ High(x));
+        log.logInfo("FUZZY: Processing High"+ FuzzyPayload.getValue(5));
    FuzzyPayload.setValue(6, Safe(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Safety from bacteria "+ Safe(x));
+        log.logInfo("FUZZY: Processing Safety from bacteria "+ FuzzyPayload.getValue(6));
    FuzzyPayload.setValue(7, Unsafe(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Unsafe "+ Unsafe(x));
+        log.logInfo("FUZZY: Processing Unsafe "+ FuzzyPayload.getValue(7));
    FuzzyPayload.setValue(8, Decrease(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing Action to take Decrease"+ Decrease(x));
-   FuzzyPayload.setValue(9, NoChange(x));
+        log.logInfo("FUZZY: Processing Action to take Decrease"+ FuzzyPayload.getValue(8));
+   FuzzyPayload.setValue(9, Increase(x));
    if(DEBUG & DBUG_LVL >= LIGHT)
-        log.logInfo("FUZZY: Processing NoChange"+ NoChange(x));
+        log.logInfo("FUZZY: Processing Increase"+ FuzzyPayload.getValue(9));
    ClusterMessage msg = new ClusterMessage();
    msg.setMsgCode(ClusterMessage.FUZZY);
    msg.setOriginator(L3.getAddress());

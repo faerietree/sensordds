@@ -14,6 +14,8 @@ import com.sun.spot.peripheral.Spot;
 import edu.umb.cs.tinydds.utils.GlobalConfiguration;
 import edu.umb.cs.tinydds.utils.Logger;
 import edu.umb.cs.tinydds.MessagePayloadFuzzy;
+import edu.umb.cs.tinydds.MessagePayload;
+import edu.umb.cs.tinydds.MessageFactory;
 
 public class FuzzyEngine
 {
@@ -27,7 +29,7 @@ private FuzzyEngine()
         FuzzyPayload = new MessagePayloadFuzzy();
 }
 
-public FuzzyEngine getInstance()
+public static FuzzyEngine getInstance()
 {
     if(instance == null)
         instance = new FuzzyEngine();
@@ -179,6 +181,12 @@ public void processTemp(float x)
    FuzzyPayload.setValue(7, Unsafe(x));
    FuzzyPayload.setValue(8, Decrease(x));
    FuzzyPayload.setValue(9, NoChange(x));
+  
+}
+
+public void processPayload(MessagePayload payload)
+{
+
 }
 
 }

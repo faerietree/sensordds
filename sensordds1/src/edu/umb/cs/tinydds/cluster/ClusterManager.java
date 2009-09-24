@@ -43,7 +43,7 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
     private Hashtable clusters; // CH (NODEs) in the network and their vectors of CMs
     
     // These variables for CH and CM
-    private Vector clusterMembers;
+    private static Vector clusterMembers;
     private long clusterHead;  // Holds value of the CH for this CM (if this is a CM)
     private int clusterColorPosition;
 
@@ -55,7 +55,7 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
         return clusterManager;
     }
 
-    public synchronized Long getNextMember()
+    public static synchronized Long getNextMember()
     {
         if(clusterMembers != null)
             return new Long(-1);

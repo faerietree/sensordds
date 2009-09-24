@@ -29,6 +29,7 @@ public class ClusterMessage extends AbstractMessage implements GlobalConfigurati
     public static final byte YOU_ARE_CH = 3;
     public static final byte MY_CMS = 4;
     public static final byte YOUR_CH = 5;
+    public static final byte FUZZY = 6;
 
     // public static final byte NEED_CH= 4;
     // public static final byte MY_CM = 4;

@@ -17,9 +17,9 @@ import edu.umb.cs.tinydds.MessagePayloadFuzzy;
 import edu.umb.cs.tinydds.MessagePayload;
 import edu.umb.cs.tinydds.MessageFactory;
 
-public class FuzzyEngine
+public class FuzzyEngine implements GlobalConfiguration
 {
-private Logger log = new Logger();
+private static Logger log;
 private static FuzzyEngine instance;
 private static MessagePayloadFuzzy FuzzyPayload;
 
@@ -27,6 +27,8 @@ private FuzzyEngine()
 {
   if(FuzzyPayload == null)
         FuzzyPayload = new MessagePayloadFuzzy();
+  if(log == null)
+      log  = new Logger("Fuzzy Engine");
 }
 
 public static FuzzyEngine getInstance()
@@ -186,6 +188,8 @@ public void processTemp(float x)
 
 public void processPayload(MessagePayload payload)
 {
+    if(DEBUG && DBUG_LVL >= MEDIUM)
+        log.logInfo("Received Fuzzy payload.Trying to process.");
 
 }
 

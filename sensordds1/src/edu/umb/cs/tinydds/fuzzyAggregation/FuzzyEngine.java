@@ -19,6 +19,10 @@ import edu.umb.cs.tinydds.cluster.ClusterMessage;
 import edu.umb.cs.tinydds.cluster.ClusterManager;
 import edu.umb.cs.tinydds.L3.L3;
 import edu.umb.cs.tinydds.L3.OneHop;
+import java.util.Timer;
+import java.util.TimerTask;
+import edu.umb.cs.tinydds.io.TempSensor;
+
 import edu.umb.cs.tinydds.MessageFactory;
 
 public class FuzzyEngine implements GlobalConfiguration
@@ -26,6 +30,9 @@ public class FuzzyEngine implements GlobalConfiguration
 private static Logger log;
 private static FuzzyEngine instance;
 private static MessagePayloadFuzzy FuzzyPayload;
+private TimerTask task;
+private Timer ReaderInterval;
+private TempSensor temp;
 
 private FuzzyEngine()
 {
@@ -33,7 +40,20 @@ private FuzzyEngine()
         FuzzyPayload = new MessagePayloadFuzzy();
   if(log == null)
       log  = new Logger("Fuzzy Engine");
-}
+  if(temp == null)
+      temp = new TempSensor();
+  task = new TimerTask() { 
+      public void run()
+      {
+         try {  processTemp(temp.getValue()); }
+         catch(Exception ie){ log.logError("Error while reading temperature sensor");}
+      }
+    };
+
+    ReaderInterval = new Timer();
+    ReaderInterval.scheduleAtFixedRate(task, PING_DELAY, PING_INTERVAL * ONE_SECOND);
+
+  }
 
 public static FuzzyEngine getInstance()
 {
@@ -177,6 +197,9 @@ private float NoChange(float x)
 
 public void processTemp(float x)
 {
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("Processing Temperature "+ x);
+
    FuzzyPayload.setValue(0, Freezing(x));
    FuzzyPayload.setValue(1, Cold(x));
    FuzzyPayload.setValue(2, Hot(x));

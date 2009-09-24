@@ -55,6 +55,14 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
         return clusterManager;
     }
 
+    public synchronized Long getNextMember()
+    {
+        if(clusterMembers != null)
+            return new Long(-1);
+        else
+            return (Long)clusterMembers.lastElement();
+    }
+
     private ClusterManager() {
         logger = new Logger("ClusterManager");
 

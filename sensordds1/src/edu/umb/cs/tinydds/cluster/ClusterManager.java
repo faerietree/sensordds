@@ -251,6 +251,7 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("loadMessage:received message: SOMETHING ELSE");
         }
+        FuzzyEngine.getInstance();
     }
 
     private void creatBaseStationTasks(){

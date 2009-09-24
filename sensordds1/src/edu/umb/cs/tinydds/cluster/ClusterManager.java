@@ -19,6 +19,7 @@ import java.util.TimerTask;
 import java.util.Vector;
 import java.util.Enumeration;
 import edu.umb.cs.tinydds.io.LED;
+import edu.umb.cs.tinydds.fuzzyAggregation.FuzzyEngine;
 
 /**
  *
@@ -226,11 +227,19 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("loadMessage:received message: YOUR_CH");
             if(!isClusterHead){
-                messageYourChHandler(msg);
+                messageYourchHandler(msg);
+            }
+        }
+        else if (code == ClusterMessage.FUZZY){
+            if(DEBUG && DBUG_LVL >= LIGHT)
+                logger.logInfo("loadMessage:received message: FUZZY");
+            if(!isClusterHead){
+                messageFuzzyHandler(msg);
             }
         }
 
-        else {
+        else
+        {
             if(DEBUG && DBUG_LVL >= LIGHT)
                 logger.logInfo("loadMessage:received message: SOMETHING ELSE");
         }
@@ -449,12 +458,19 @@ public class ClusterManager implements GlobalConfiguration, Runnable {
     }
         
 
-    private void messageYourChHandler(ClusterMessage msg) {
+    private void messageYourchHandler(ClusterMessage msg) {
+
         LED leds = new LED();
         clusterColorPosition = msg.getColorIndex();
         leds.setColor(0, ClusterColors.getColor(clusterColorPosition));
         leds.setOn(0);
     }
+
+    private void messageFuzzyHandler(ClusterMessage msg) {
+
+        FuzzyEngine.getInstance().processPayload(msg.getPayload());
+    }
+
 
     
     protected void removeNode(Long nodeID){

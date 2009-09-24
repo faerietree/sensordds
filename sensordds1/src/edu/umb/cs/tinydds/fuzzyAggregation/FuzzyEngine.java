@@ -42,8 +42,7 @@ private FuzzyEngine()
       log  = new Logger("Fuzzy Engine");
   if(temp == null)
       temp = new TempSensor();
-  if(task == null)
-    task = new TimerTask() {
+  task = new TimerTask() {
                   public void run()
                   {
                      try {  processTemp(temp.getValue()); }
@@ -51,7 +50,7 @@ private FuzzyEngine()
                   }
                 };
 
-    if(ReaderInterval != null)
+     if(ReaderInterval != null)
             {
             ReaderInterval = new Timer();
             ReaderInterval.scheduleAtFixedRate(task, PING_DELAY, PING_INTERVAL * ONE_SECOND);

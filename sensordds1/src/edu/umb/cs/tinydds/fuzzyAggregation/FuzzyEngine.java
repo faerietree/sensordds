@@ -42,17 +42,20 @@ private FuzzyEngine()
       log  = new Logger("Fuzzy Engine");
   if(temp == null)
       temp = new TempSensor();
-  task = new TimerTask() { 
-      public void run()
-      {
-         try {  processTemp(temp.getValue()); }
-         catch(Exception ie){ log.logError("Error while reading temperature sensor");}
-      }
-    };
+  if(task == null)
+    task = new TimerTask() {
+                  public void run()
+                  {
+                     try {  processTemp(temp.getValue()); }
+                     catch(Exception ie){ log.logError("Error while reading temperature sensor");}
+                  }
+                };
 
-    ReaderInterval = new Timer();
-    ReaderInterval.scheduleAtFixedRate(task, PING_DELAY, PING_INTERVAL * ONE_SECOND);
-
+    if(ReaderInterval != null)
+            {
+            ReaderInterval = new Timer();
+            ReaderInterval.scheduleAtFixedRate(task, PING_DELAY, PING_INTERVAL * ONE_SECOND);
+            }
   }
 
 public static FuzzyEngine getInstance()
@@ -201,21 +204,41 @@ public void processTemp(float x)
         log.logInfo("Processing Temperature "+ x);
 
    FuzzyPayload.setValue(0, Freezing(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Freezing "+ Freezing(x));
    FuzzyPayload.setValue(1, Cold(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Cold "+ Cold(x));
    FuzzyPayload.setValue(2, Hot(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Warm "+ Hot(x));
    FuzzyPayload.setValue(3, Low(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Airflow Low "+ Low(x));
    FuzzyPayload.setValue(4, Ideal(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Airflow Ideal"+ Ideal(x));
    FuzzyPayload.setValue(5, High(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing High"+ High(x));
    FuzzyPayload.setValue(6, Safe(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Safety from bacteria "+ Safe(x));
    FuzzyPayload.setValue(7, Unsafe(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Unsafe "+ Unsafe(x));
    FuzzyPayload.setValue(8, Decrease(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing Action to take Decrease"+ Decrease(x));
    FuzzyPayload.setValue(9, NoChange(x));
+   if(DEBUG & DBUG_LVL >= LIGHT)
+        log.logInfo("FUZZY: Processing NoChange"+ NoChange(x));
    ClusterMessage msg = new ClusterMessage();
    msg.setMsgCode(ClusterMessage.FUZZY);
    msg.setOriginator(L3.getAddress());
    msg.setReceiver(ClusterManager.getNextMember().longValue());
-   ClusterManager.getInstance().loadMessage(msg, new OneHop());
-
+   ClusterManager.getInstance().loadMessage(msg,new OneHop());
+ processCritical();
 }
 
 public void processPayload(MessagePayload payload)
@@ -223,6 +246,11 @@ public void processPayload(MessagePayload payload)
     if(DEBUG && DBUG_LVL >= MEDIUM)
         log.logInfo("Received Fuzzy payload.Trying to process.");
 
+}
+
+public void processCritical()
+{
+    
 }
 
 }

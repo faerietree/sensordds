@@ -56,6 +56,7 @@ private FuzzyEngine()
             ReaderInterval.scheduleAtFixedRate(task, PING_DELAY, PING_INTERVAL * ONE_SECOND);
             }
   }
+/** Returns an instance of FuzzyEngine. As you can see, FuzzyEngine is a singleton. */
 
 public static FuzzyEngine getInstance()
 {
@@ -63,6 +64,12 @@ public static FuzzyEngine getInstance()
         instance = new FuzzyEngine();
     return instance;
 }
+
+/** Returns a double value denoting how much the temprature belongs to freezing.
+ *
+ * @param x - Temperature reading by TempSensor
+ * @return A value accourding to the formulaw in FuzzysetEquations.
+ */
 
 private float Freezing(float x)
 {
@@ -73,6 +80,12 @@ private float Freezing(float x)
     else
         return 0;
 }
+
+/** Returns a value denoting how much temperature belongs to hot.
+ *
+ * @param x - Temperature reading by TempSensor
+ * @return A value accourding to the formulaw in FuzzysetEquations.
+ */
 
 private float Hot(float x)
 {
@@ -248,7 +261,8 @@ public void processPayload(MessagePayload payload)
 
 public void processCritical()
 {
-    
+    // not being used at present as we have decided to process actions rather than Critical and non-critical states.
+    // to be used when we decide where to send control messages.
 }
 
 }
